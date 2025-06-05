@@ -1,0 +1,150 @@
+---
+title: "fishblicc Support & Package Creation"
+author: "Paul Medley"
+date:   "August 2022"
+format: html
+editor: visual
+---
+
+# Package Guide
+
+The general guide is from
+
+[R Packages (2e) (r-pkgs.org)](https://r-pkgs.org/)
+
+by Wickham and Bryan.
+
+Specific to this package, rstantools were used. An excellent guide was provided by
+
+
+```{r setup}
+library("here")
+library("devtools")
+library("usethis")
+# system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.Rproj.user"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
+#system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.git"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
+#system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.gitignore"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
+
+#packageVersion("devtools")
+# use_git()  # Sets up git. Needed only once
+# https://github.com/settings/tokens
+# gitcreds::gitcreds_set()
+
+```
+
+# To Do
+
+# Other Package Dependencies
+
+```{r SetUpPackages}
+#| eval: false
+#use_testthat(3)   # Sets up testing skeleton
+
+# add additional package dependencies
+#usethis::use_package("stats")
+#usethis::use_package("statmod")
+#usethis::use_package("ggplot2")
+#usethis::use_package("tidyr")
+#usethis::use_package("dplyr")
+#usethis::use_package("purrr")
+#usethis::use_package("posterior")
+usethis::use_package("tibble")
+usethis::use_package("tidyselect")
+#usethis::use_package("rstantools")
+#usethis::use_package("bayesplot", "Suggests")
+usethis::use_tidy_description()   #orders and formats DESCRIPTION fields
+```
+
+# Package Build
+
+```{r BuildPackage}
+remove.packages("JABBA_HCR")
+
+# Following compiles Stan code and creates the package
+# Needs to be run twice apparently for initial set up
+#example(source)
+try(roxygen2::roxygenize(load_code = sourceDir), silent=TRUE)
+roxygen2::roxygenize()  
+
+# Build package
+# compile first - clean and install
+
+# If Add new Stan file, e.g., inst/stan/new.stan
+pkgbuild::compile_dll() # to preform a fake R CMD install.
+#roxygen2::roxygenize()  # to update the documentation etc.
+
+devtools::document()  # only updates documentation
+```
+
+
+# Test That
+
+```{r test_that}
+
+use_r("BLICC_Model")
+use_r("BLICC_ObsExp")
+use_r("BLICC_Plots")
+use_r("BLICC_PR")
+use_r("BLICC_Stan")
+use_r("BLICC_Tables")
+
+
+#use_testthat(3)   # Sets up testing skeleton
+use_test("BLICC_Stan")
+use_test("BLICC_Model")
+use_test("BLICC_ObsExp")
+use_test("BLICC_Plots")
+use_test("BLICC_PR")
+use_test("BLICC_Tables")
+use_test("BLICC_blip")
+
+```
+
+# Install Package
+
+```{r CheckPackage}
+check()    # Checks package is OK
+
+# rstantools removed from imports
+
+load_all()  # To test functions as though they are installed as package
+#devtools::install()     # to install the package locally.
+
+remove.packages("fishblicc")
+# install the package locally
+
+install.packages("../fishblicc", repos=NULL, type="source")
+
+# install from github
+remotes::install_github("PaulAHMedley/fishblicc")
+
+```
+
+
+# Create Data Sets
+
+```{r DataCreation}
+
+#load(here("data", "seatrout_ld.rda"))
+#save(trgl_ld, trgl_slim, trgl_rp, file=here("output", "blicc_results.rda"))
+#load("D:/paula/Dropbox/Routines/BLICC/output/blicc_results.rda")
+
+usethis::use_data(data, compress="xz", overwrite=T)
+```
+
+
+# TEST RUNS
+
+```{r TestSetup1, eval=F}
+load_all()
+
+```
+
+# Authentication
+
+```{r}
+# Get token from website and set in R
+# https://github.com/settings/tokens
+gitcreds::gitcreds_set()
+3
+```

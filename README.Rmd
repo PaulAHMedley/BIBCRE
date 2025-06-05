@@ -1,0 +1,36 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+##  ><> ##    ><>     JABBA HCR Functions v0.95
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "><>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# JABBA HCR
+
+This is an extension to the stock assessment state space production model JABBA that allows testing of index-based linear harvest control rules against projections of the JABBA model. This is a management strategy evaluation in that the linear index-based HCR is simpler than the JABBA production operating model, but clearly scenarios that can be tested are more limited. What this package is able to show is to justify an HCR based on a series of plausible fits of the JABBA model.
+
+Index-based means it treats CPUE as a linear index of abundance - the same assumption in JABBA itself. This is sometimes referred to as "model-free" HCR, but this is a misnomer as it does depend on an underlying model and trigger reference points in an HCR will also depend on some underlying model.
+
+
+# Workflow
+ 
+1. Generate a jabba_fits from the JABBA model
+2. Define the linear HCR, ma, change_limit ranges to test and generate a tibble of these values
+3. Run all HCR on JABBA fit info generating performance indicators for each HCR
+4. Generate plots of HCR performance with rejected HCR in red.
+5. Find "best performing" HCR based on relative performance weights.
+
+The 'jabba_fits' is a single fit or list of fits produced by JABBA. This package does not use JABBA directly, but can be used to process its output.
+
+
+  
+
