@@ -16,17 +16,22 @@ by Wickham and Bryan.
 
 Specific to this package, rstantools were used. An excellent guide was provided by
 
-
 ```{r setup}
 library("here")
 library("devtools")
 library("usethis")
+
+#usethis::use_build_ignore("Package_Creation.qmd")
+
+#create_package(here())
+
+
 # system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.Rproj.user"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
 #system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.git"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
 #system2("powershell", args=c("Set-Content", "-Path", paste0(here(),"\\.gitignore"), "-Stream", "com.dropbox.ignored", "-Value", "1"))
 
 #packageVersion("devtools")
-# use_git()  # Sets up git. Needed only once
+#use_git()  # Sets up git. Needed only once
 # https://github.com/settings/tokens
 # gitcreds::gitcreds_set()
 
@@ -41,15 +46,16 @@ library("usethis")
 #use_testthat(3)   # Sets up testing skeleton
 
 # add additional package dependencies
-#usethis::use_package("stats")
+usethis::use_package("stats")
 #usethis::use_package("statmod")
-#usethis::use_package("ggplot2")
-#usethis::use_package("tidyr")
-#usethis::use_package("dplyr")
-#usethis::use_package("purrr")
+usethis::use_package("ggplot2")
+usethis::use_package("tidyr")
+usethis::use_package("dplyr")
+usethis::use_package("purrr")
 #usethis::use_package("posterior")
 usethis::use_package("tibble")
 usethis::use_package("tidyselect")
+usethis::use_package("flextable")
 #usethis::use_package("rstantools")
 #usethis::use_package("bayesplot", "Suggests")
 usethis::use_tidy_description()   #orders and formats DESCRIPTION fields
@@ -58,12 +64,12 @@ usethis::use_tidy_description()   #orders and formats DESCRIPTION fields
 # Package Build
 
 ```{r BuildPackage}
-remove.packages("JABBA_HCR")
+#remove.packages("JABBAHCR")
 
 # Following compiles Stan code and creates the package
 # Needs to be run twice apparently for initial set up
 #example(source)
-try(roxygen2::roxygenize(load_code = sourceDir), silent=TRUE)
+#try(roxygen2::roxygenize(load_code = sourceDir), silent=TRUE)
 roxygen2::roxygenize()  
 
 # Build package
@@ -76,27 +82,20 @@ pkgbuild::compile_dll() # to preform a fake R CMD install.
 devtools::document()  # only updates documentation
 ```
 
-
 # Test That
 
 ```{r test_that}
 
-use_r("BLICC_Model")
-use_r("BLICC_ObsExp")
-use_r("BLICC_Plots")
-use_r("BLICC_PR")
-use_r("BLICC_Stan")
-use_r("BLICC_Tables")
-
+use_r("JBH_Create")
+use_r("JBH_HCRTest")
+use_r("JBH_SimOutput")
+use_r("JBH_Misc")
 
 #use_testthat(3)   # Sets up testing skeleton
-use_test("BLICC_Stan")
-use_test("BLICC_Model")
-use_test("BLICC_ObsExp")
-use_test("BLICC_Plots")
-use_test("BLICC_PR")
-use_test("BLICC_Tables")
-use_test("BLICC_blip")
+use_test("JBH_Create")
+use_test("JBH_HCRTest")
+use_test("JBH_SimOutput")
+use_test("JBH_Misc")
 
 ```
 
@@ -110,15 +109,17 @@ check()    # Checks package is OK
 load_all()  # To test functions as though they are installed as package
 #devtools::install()     # to install the package locally.
 
-remove.packages("fishblicc")
+remove.packages("JABBAHCR")
 # install the package locally
 
-install.packages("../fishblicc", repos=NULL, type="source")
+install.packages("../JABBAHCR", repos=NULL, type="source")
 
 # install from github
-remotes::install_github("PaulAHMedley/fishblicc")
+remotes::install_github("PaulAHMedley/JABBAHCR")
 
 ```
+
+
 
 
 # Create Data Sets
@@ -131,7 +132,6 @@ remotes::install_github("PaulAHMedley/fishblicc")
 
 usethis::use_data(data, compress="xz", overwrite=T)
 ```
-
 
 # TEST RUNS
 

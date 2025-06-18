@@ -8,3 +8,6 @@
 ^_pkgdown\.yml$     # Configuration info for the package website
 ^\.github$          # GitHub Actions workflows
 ^Package_Creation\.qmd$
+^JABBAHCR\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$

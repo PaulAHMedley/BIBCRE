@@ -28,7 +28,7 @@ graph_ma <- function(jabba_fit) {
   Average_CPUE <- Create_MeanCPUEFunction(jabba_fit) # A function to combine multiple indices into a single index
   IMSY <- Average_CPUE(CPUE_MSY(jabba_fit))
   HMSY <- jabba_fit$refpts$fmsy[1]
-  obserr <- sqrt(pull(jabba_fit$pars,
+  obserr <- sqrt(dplyr::pull(jabba_fit$pars,
                       Median)[startsWith(rownames(jabba_fit$pars), "tau2")])
   
   # Extract the data components that will be used from the fit

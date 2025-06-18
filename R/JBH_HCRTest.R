@@ -8,10 +8,10 @@
 #' A ggplot is returned with the HCR plotted as a line between 
 #' the index of stock status and control.
 #'   
+#' @inheritParams HCR_performance
 #' @inheritParams run_HCR_MSE
-#' @inheritParams graph_BMSY_FMSY
-#' @param HCR_ID Logical - whether to include the ID as a factor in the plot. 
-#'   Will only work for 12 or fewer HCR.
+#' @param HCR_ID Logical - whether to include the HCR ID as a factor in the 
+#'   plot. Will only work for 12 or fewer HCR.
 #' @return A ggplot object plotting the HCR's
 #' @export
 #' 
@@ -41,7 +41,7 @@ graph_linear_HCR <- function(HCR_df,
     ggplot2::labs(y = "Control", x = "HCR Index") +
     ggplot2::coord_cartesian( y = c(0, NA))
   
-  if (HCR_ID & nrow(HCR_df) <= 12) gp <- gp + facet_wrap(vars(ID))
+  if (HCR_ID & nrow(HCR_df) <= 12) gp <- gp + ggplot2::facet_wrap(vars(ID))
   
   if (!is.null(HCR_sim)) {
     pv_df <- tibble::tibble(pvIndex = pvIndex, pvControl = pvControl)

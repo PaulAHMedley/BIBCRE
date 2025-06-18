@@ -1,0 +1,25 @@
+Package: JABBAHCR
+Title: Test Index-based Linear HCR using JABBA model projections
+Version: 0.95
+Authors@R: 
+    person("Paul", "Medley", , "paulahmedley@gmail.com", role = c("aut", "cre"))
+Description: This is an extension to the stock assessment state space
+    production model JABBA that allows testing of index-based linear
+    harvest control rules against projections of the JABBA model. This is
+    a management strategy evaluation in that the linear index-based HCR is
+    simpler than the JABBA production operating model. This package is able to
+    test whether an HCR achieves objectives based on a series of plausible
+    JABBA modelfits.
+License: GPL (>= 3)
+Imports: 
+    dplyr,
+    flextable,
+    ggplot2,
+    purrr,
+    stats,
+    tibble,
+    tidyr,
+    tidyselect
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2

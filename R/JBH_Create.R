@@ -44,8 +44,8 @@ create_HCR_MSE <- function(jabba_fit,
   
   Avg_CPUE <- create_mean_CPUE(jabba_fit)
   
-  if (is.null(rho)) rho <- -log(1-median(Bio$H))/1  #H=(1-e(-rho*f))  
-  obserr <- sqrt(pull(jabba_fit$pars,
+  if (is.null(rho)) rho <- -log(1-stats::median(Bio$H))/1  #H=(1-e(-rho*f))  
+  obserr <- sqrt(dplyr::pull(jabba_fit$pars,
                       Median)[startsWith(rownames(jabba_fit$pars), "tau2")])
   
   # Extract sufficient parameters from JABBA fit for the n simulations
@@ -59,7 +59,7 @@ create_HCR_MSE <- function(jabba_fit,
     
     sn <- sort(sn)
     Par <- Par |>
-      slice(sn)
+      dplyr::slice(sn)
     
     Bio <- Bio |>
       dplyr::rename(siter = iter) |>
@@ -87,7 +87,7 @@ create_HCR_MSE <- function(jabba_fit,
     prod_fun <- function(pBti) {
       pBti * (1 + r * (1 - pBti)) * rlnorm(nsim, 0, lsigma)}
   } else if (jabba_fit$settings$model.type %in% c("Fox", "Pella_m")) {
-    m_1 <- pull(Par, m)-1
+    m_1 <- dplyr::pull(Par, m)-1
     r_m_1 <- r/m_1
     prod_fun <- function(pBti) {
       pBti * (1 + r_m_1 * (1 - pBti^m_1)) * rlnorm(nsim, 0, lsigma)}
@@ -523,7 +523,7 @@ MSY_refpt <- function(jabba_fit, ref_year=NULL) {
   for (i in 1:length(jabba_fit)) {
     print(i)
     Average_CPUE <- create_mean_CPUE(jabba_fit[[i]]) # A function to combine multiple indices into a single index
-    H_ref <- c(H_ref, dplyr::pull(filter(jabba_fit[[i]]$kbtrj, year==ref_year), H))
+    H_ref <- c(H_ref, dplyr::pull(dplyr::filter(jabba_fit[[i]]$kbtrj, year==ref_year), H))
     HMSY <- c(HMSY, jabba_fit[[i]]$pfunc$Hmsy)
     MSY <- c(MSY, jabba_fit[[i]]$pfunc$MSY)
     IMSY = c(IMSY, Average_CPUE(CPUE_MSY(jabba_fit[[i]])))
