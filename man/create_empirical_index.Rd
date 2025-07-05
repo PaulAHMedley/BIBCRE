@@ -21,3 +21,7 @@ to calculate the HCR index
 The index function created calculates a moving average from one or more
 abundance indices, usually CPUE.
 }
+\details{
+The same lognormal error is applied across all simulations to make HCR more
+comparable.
+}

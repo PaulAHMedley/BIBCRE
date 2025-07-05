@@ -7,8 +7,8 @@
 table_sim_performance(HCR_sim)
 }
 \arguments{
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
 }
 \value{
 \code{flextable} containing the HCR performance measures

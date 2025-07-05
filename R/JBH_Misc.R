@@ -1,9 +1,5 @@
 
-
-
-
 # #### Miscellaneous functions ####
-
 
 #' Plot correlation between simulated biomass and index using different moving
 #' average parameters. 

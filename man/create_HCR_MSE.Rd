@@ -10,7 +10,7 @@ create_HCR_MSE(
   ProjLength = 50,
   nsim = 1000,
   ref_pt = standard_risk_ref_pt(),
-  rho = NULL
+  rho = 1
 )
 }
 \arguments{
@@ -26,7 +26,8 @@ create_HCR_MSE(
 defaults apply.}
 
 \item{rho}{Conversion factor from effort (f) to fishing mortality, so
-H=(1-e(-rho*f)). Only used if control_type is "Effort"}
+H=(1-e(-rho*f)). Only used if control_type is "Effort". Control defaults to
+fishing mortality (rho=1).}
 }
 \value{
 A function that will apply the HCR using the JABBA model fit and
@@ -35,5 +36,9 @@ control change limit and moving average parameter.
 }
 \description{
 The HCR function returns simulation results from HCR parameters using a
-jabba model fit results.
+JABBA model fit results.
+}
+\details{
+The the same state space lognormal random number is applied across
+simulations, so HCR performance is more comparible.
 }

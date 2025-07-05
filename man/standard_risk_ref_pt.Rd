@@ -2,14 +2,27 @@
 % Please edit documentation in R/JBH_Create.R
 \name{standard_risk_ref_pt}
 \alias{standard_risk_ref_pt}
-\title{Defines standard risk-based reference points.}
+\title{Defines standard risk-based reference points}
 \usage{
-standard_risk_ref_pt(m = 2)
+standard_risk_ref_pt(B_tar = 1)
+}
+\arguments{
+\item{B_tar}{Target reference point relative to MSY}
 }
 \value{
 List of reference points
 }
 \description{
-This is purely to maintain reference points definition in one place.
-Can be edited.
+This maintains the reference points definition in one place and can be
+edited. The reference points are in a list and consist of:
+\itemize{
+\item BMSY = biomass at MSY as a proportion of the unexploited biomass
+\item BMSY_range = accepted target range around BMSY
+\item B_lim = limit reference point as a proportion of the unexploited biomass
+\item mostly, likely, highly likely, high certainty = probabilistic definitions
+of each word not currently used
+\item max_risk = maximum acceptable risk for the candidate HCR selection.
+Primarily used to exlcude HCR with this risk of falling below the limit
+reference point B_lim
+}
 }

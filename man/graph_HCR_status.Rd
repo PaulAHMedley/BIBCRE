@@ -2,7 +2,7 @@
 % Please edit documentation in R/JBH_HCRTest.R
 \name{graph_HCR_status}
 \alias{graph_HCR_status}
-\title{Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+\title{Plot the HCR stock status relative to the Btar (TRP) and Blim (LRP)
 
 A ggplot is returned with the the proportion of the simulation time across
 all runs for an HCR below the limit (x-axis) and around the target (y-axis).
@@ -23,7 +23,7 @@ HCR parameters}
 A ggplot object plotting the HCR performance catches
 }
 \description{
-Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+Plot the HCR stock status relative to the Btar (TRP) and Blim (LRP)
 
 A ggplot is returned with the the proportion of the simulation time across
 all runs for an HCR below the limit (x-axis) and around the target (y-axis).

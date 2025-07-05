@@ -7,13 +7,15 @@
 table_sim_decision(HCR_sim)
 }
 \arguments{
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
 }
 \value{
 flextable object containing the state-response proportions for the
 HCR
 }
 \description{
-Table the proportion of each state-response for HCR decisions
+The decisions compare stock status versus response, where an initial response
+is indicated by the HCR index being below the highest trigger point in the
+HCR or below the lowest trigger in response to being below Blim.
 }

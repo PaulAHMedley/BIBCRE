@@ -7,11 +7,14 @@
 A ggplot is returned with the biomass as a proportion of BMSY and H as a
 proportion of HMSY over time.}
 \usage{
-graph_sim_BMSY_FMSY(HCR_sim)
+graph_sim_BMSY_FMSY(HCR_sim, type = "both")
 }
 \arguments{
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
+
+\item{type}{Either "both", "bmsy" or "hmsy" to indicate which plots are
+provided}
 }
 \value{
 A probability density plot of biomass dynamics projection under a HCR

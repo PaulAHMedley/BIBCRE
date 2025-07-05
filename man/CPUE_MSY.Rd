@@ -2,7 +2,7 @@
 % Please edit documentation in R/JBH_Create.R
 \name{CPUE_MSY}
 \alias{CPUE_MSY}
-\title{Gets the median CPUE expected at MSY from a JABBA fit}
+\title{Returns the median CPUE for each gear expected at MSY from a JABBA fit}
 \usage{
 CPUE_MSY(jabba_fit)
 }
@@ -13,5 +13,5 @@ CPUE_MSY(jabba_fit)
 A 1D array of each CPUE at MSY
 }
 \description{
-Gets the median CPUE expected at MSY from a JABBA fit
+Returns the median CPUE for each gear expected at MSY from a JABBA fit
 }

@@ -36,19 +36,19 @@ graph_linear_HCR <- function(HCR_df,
   
   line_df <- dplyr::bind_rows(line_df, lo_df, hi_df)
   
-  gp <- ggplot2::ggplot(line_df, aes(x = trIndex, y = trControl, group = ID)) +
+  gp <- ggplot2::ggplot(line_df, ggplot2::aes(x = trIndex, y = trControl, group = ID)) +
     ggplot2::geom_line() +
     ggplot2::labs(y = "Control", x = "HCR Index") +
     ggplot2::coord_cartesian( y = c(0, NA))
   
-  if (HCR_ID & nrow(HCR_df) <= 12) gp <- gp + ggplot2::facet_wrap(vars(ID))
+  if (HCR_ID & nrow(HCR_df) <= 12) gp <- gp + ggplot2::facet_wrap(dplyr::vars(ID))
   
   if (!is.null(HCR_sim)) {
     pv_df <- tibble::tibble(pvIndex = pvIndex, pvControl = pvControl)
     tr_df <- tibble::tibble(trIndex = trIndex, trControl = trControl)
     gp <- gp +
-      ggplot2::geom_point(pv_df, aes(x = pvIndex, y = pvControl)) +
-      ggplot2::geom_line(tr_df, aes(x = pvIndex, y = pvControl), color = "blue")
+      ggplot2::geom_point(pv_df, ggplot2::aes(x = pvIndex, y = pvControl)) +
+      ggplot2::geom_line(tr_df, ggplot2::aes(x = pvIndex, y = pvControl), color = "blue")
   }
   return(gp)
 }
@@ -74,17 +74,18 @@ graph_HCR_catches <- function(HCR_df) {
   Mean_Catch <- mean(HCR_df$Catch_Avg)
   Var_Catch <- mean(HCR_df$Catch_Rng)
   
-  ggplot2::ggplot(HCR_df, aes(x=Catch_Avg, y=Catch_Rng)) +
-    ggplot2::geom_point(aes(color=Evaluation)) +
+  ggplot2::ggplot(HCR_df, ggplot2::aes(x=Catch_Avg, y=Catch_Rng)) +
+    ggplot2::geom_point(ggplot2::aes(color=Evaluation)) +
     ggplot2::scale_color_manual(values = c("Candidate" = "black", "Rejected" = "red")) +
     ggplot2::geom_hline(yintercept=Var_Catch, linetype="dotted") +
     ggplot2::geom_vline(xintercept=Mean_Catch, linetype="dotted") +
-    ggplot2::geom_smooth(method="lm", formula = y~x+0, se=FALSE, linetype="solid", alpha=0.5)
+    ggplot2::geom_smooth(method="lm", formula = y~x+0, se=FALSE, linetype="solid", alpha=0.5) + 
+    ggplot2::labs(x="Average Catch", y = "Catch Range")
   
 }
 
 
-#' Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+#' Plot the HCR stock status relative to the Btar (TRP) and Blim (LRP)
 #'   
 #' A ggplot is returned with the the proportion of the simulation time across 
 #' all runs for an HCR below the limit (x-axis) and around the target (y-axis). 
@@ -101,23 +102,20 @@ graph_HCR_catches <- function(HCR_df) {
 graph_HCR_status <- function(HCR_df, HCR_MSE) {
   
   ref_pt <- get("ref_pt", envir=environment(HCR_MSE))
-  ggplot2::ggplot(HCR_df, aes(x=lt_Blim, y=at_BMSY)) +
-    ggplot2::geom_point(aes(color=Evaluation)) +
+  ggplot2::ggplot(HCR_df, ggplot2::aes(x=lt_Blim, y=at_Btar)) +
+    ggplot2::geom_point(ggplot2::aes(color=Evaluation)) +
     ggplot2::scale_color_manual(values = c("Candidate" = "black", "Rejected" = "red")) +
     ggplot2::geom_hline(yintercept=ref_pt$mostly, linetype="dotted") +
     ggplot2::geom_vline(xintercept=ref_pt$max_risk, linetype="dotted") +
-    ggplot2::labs(x = "Proportion Below B_lim", y = "Proportion at MSY")
+    ggplot2::labs(x = "Proportion Below B_lim", y = "Proportion in target range")
   
 }
 
-#' Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+#' Plot the HCR performance with respect to stock status and catch
 #'   
 #' A ggplot is returned with the the proportion of the simulation time across 
-#' all runs for an HCR below the limit (x-axis) and around the target (y-axis). 
-#' Candidate HCR are plotted as black points and rejected HCR as red points. 
-#' Risk based reference points are indicated by dotted vertical and horizontal 
-#' lines, which are set at default values if no alternative candidate 
-#' definition. is provided.
+#' all runs for an HCR stock status (x-axis) and lower 10%_ile catch (y-axis). 
+#' HCR change limits indicated by colour. 
 #'   
 #' @inheritParams graph_linear_HCR
 #' @return A ggplot object plotting the HCR performance catches
@@ -126,7 +124,7 @@ graph_HCR_status <- function(HCR_df, HCR_MSE) {
 graph_HCR_status_catches <- function(HCR_df) {
   
   HCR_df |>
-    ggplot2::ggplot(aes(x=State, y=Catch_pcile, colour=factor(change_limit))) +
+    ggplot2::ggplot(ggplot2::aes(x=State, y=Catch_pcile, colour=factor(change_limit))) +
     ggplot2::geom_point() +
     ggplot2::labs(x="Stock State", y="Catch - lower 10%_ile", color = "Change Limit") 
 }
@@ -163,8 +161,8 @@ graph_HCR_decision <- function(HCR_df, ref_pt=NULL) {
     MaxRisk <- ref_pt$max_risk
   }
   
-  ggplot2::ggplot(HCR_df, aes(x=Err_Type1, y=Err_Type2)) +
-    ggplot2::geom_point(aes(color=Evaluation)) +
+  ggplot2::ggplot(HCR_df, ggplot2::aes(x=Err_Type1, y=Err_Type2)) +
+    ggplot2::geom_point(ggplot2::aes(color=Evaluation)) +
     ggplot2::scale_color_manual(values = c("Candidate" = "black", "Rejected" = "red")) +
     ggplot2::geom_hline(yintercept=MaxRisk, linetype="dotted") +
     ggplot2::geom_vline(xintercept=MaxRisk, linetype="dotted") +

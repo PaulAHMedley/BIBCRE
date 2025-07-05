@@ -4,15 +4,16 @@
 \alias{MSY_refpt}
 \title{Extracts MSY reference points from a JABBA model fit}
 \usage{
-MSY_refpt(jabba_fit, ref_year = NULL)
+MSY_refpt(jabba_list, ref_year = NULL)
 }
 \arguments{
-\item{jabba_fit}{A list returned from package JABBA \code{fit_jabba} function}
+\item{jabba_list}{a single jabba fit or a list of jabba fits}
 
 \item{ref_year}{Year to use for relative change in effort}
 }
 \value{
-List of MSY reference points
+List of MSY reference points and a reference year for fishing
+mortality for relative changes to that year
 }
 \description{
 JABBA uses the harvest rate, H, which is catch / biomass and limited to the

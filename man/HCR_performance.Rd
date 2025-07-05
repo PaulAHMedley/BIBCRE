@@ -2,14 +2,14 @@
 % Please edit documentation in R/JBH_Create.R
 \name{HCR_performance}
 \alias{HCR_performance}
-\title{Calculate the performance measures of a harvest control rule and return it
-as a row in a data frame}
+\title{Calculate the performance measures of a harvest control rule and return it as
+a row in a data frame}
 \usage{
 HCR_performance(HCR_sim)
 }
 \arguments{
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
 }
 \value{
 Tibble row of performance measures
@@ -18,15 +18,16 @@ Tibble row of performance measures
 The performance measures consist of the 1) average catch, 2) the mean catch
 range around the average (mean(abs(catch-mean_catch))), 3) the HCR Type 1
 error rate, 4) the HCR Type 2 error rate, 5) the proportion of time that the
-stock is below 0.5 BMSY (LRP) and 6) the proportion of time that the stock
-is outside 90-110\% BMSY.
+stock is below the limit reference point (usually 0.5 BMSY) and 6) the
+proportion of time that the stock is outside the target range (default
+90-110\% BMSY).
 }
 \details{
-The HCR error rates are scores indicating how well the HCR is responding.
-For Type 1, When the stock is below the limit reference point and the index
-is below the upper trigger but above the lower trigger, it scores one,
-whereas if it is above both triggers it scores two. The mean of this value
-is taken. Similarly for Type 2, responding by reducing harvest when the
-stock is at MSY scores two when the reduction is minimised, one otherwise.
-The higher the scores are, the worse the performance.
+The HCR error rates are scores indicating how well the HCR is responding. For
+Type 1, When the stock is below the limit reference point and the index is
+below the upper trigger but above the lower trigger, it scores one, whereas
+if it is above both triggers it scores two. The mean of this value is taken.
+Similarly for Type 2, responding by reducing harvest when the stock is at MSY
+scores two when the reduction is minimised, one otherwise. The higher the
+scores are, the worse the performance.
 }

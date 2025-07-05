@@ -7,8 +7,8 @@
 graph_sim_catch(HCR_sim)
 }
 \arguments{
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
 }
 \value{
 graph showing binned probability for observed and simulated catch

@@ -10,8 +10,8 @@ define_HCR_test_range(
   fMSY,
   rel_index_range = c(0.5, 1),
   rel_control_range = c(0.1, 1),
-  NInflex = 2,
-  NBreaks = 5,
+  NInflex = 2L,
+  NBreaks = 5L,
   change_limit = NA,
   ma = 0.5
 )

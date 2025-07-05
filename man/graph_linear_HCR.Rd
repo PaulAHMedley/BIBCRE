@@ -14,8 +14,8 @@ graph_linear_HCR(HCR_df, HCR_sim = NULL, HCR_ID = TRUE)
 \item{HCR_df}{A data frame produced by eg \link{define_HCR_test_range} with
 HCR parameters}
 
-\item{HCR_sim}{Fishery HCR simulation result list from the MSE
-(see \link{create_HCR_MSE}).}
+\item{HCR_sim}{Fishery HCR simulation result list from the MSE (see
+\link{create_HCR_MSE}).}
 
 \item{HCR_ID}{Logical - whether to include the HCR ID as a factor in the
 plot. Will only work for 12 or fewer HCR.}

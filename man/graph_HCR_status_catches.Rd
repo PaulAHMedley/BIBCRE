@@ -2,14 +2,11 @@
 % Please edit documentation in R/JBH_HCRTest.R
 \name{graph_HCR_status_catches}
 \alias{graph_HCR_status_catches}
-\title{Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+\title{Plot the HCR performance with respect to stock status and catch
 
 A ggplot is returned with the the proportion of the simulation time across
-all runs for an HCR below the limit (x-axis) and around the target (y-axis).
-Candidate HCR are plotted as black points and rejected HCR as red points.
-Risk based reference points are indicated by dotted vertical and horizontal
-lines, which are set at default values if no alternative candidate
-definition. is provided.}
+all runs for an HCR stock status (x-axis) and lower 10\%_ile catch (y-axis).
+HCR change limits indicated by colour.}
 \usage{
 graph_HCR_status_catches(HCR_df)
 }
@@ -21,12 +18,9 @@ HCR parameters}
 A ggplot object plotting the HCR performance catches
 }
 \description{
-Plot the HCR stock status relative to the BMSY (TRP) and Blim (LRP)
+Plot the HCR performance with respect to stock status and catch
 
 A ggplot is returned with the the proportion of the simulation time across
-all runs for an HCR below the limit (x-axis) and around the target (y-axis).
-Candidate HCR are plotted as black points and rejected HCR as red points.
-Risk based reference points are indicated by dotted vertical and horizontal
-lines, which are set at default values if no alternative candidate
-definition. is provided.
+all runs for an HCR stock status (x-axis) and lower 10\%_ile catch (y-axis).
+HCR change limits indicated by colour.
 }
