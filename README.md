@@ -1,7 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# JABBA HCR
+# fishblicc HCR
+
+This package is being superseded by a more generally approach that
+provides a simulation add-on to fishblicc, a Stan version of JABBA as
+well as JABBA as developed here. Therefore this repository will no loner
+be updated.
 
 This is an extension to the stock assessment state space production
 model JABBA (Winker et al. 2018) that allows testing of index-based
@@ -31,6 +36,9 @@ href="https://www.sciencedirect.com/science/article/pii/S0165783618300845"
 class="uri" title="JABBA Reference">Winker, H., Carvalho, F., Kapur, M.
 (2018) JABBA: Just Another Bayesian Biomass Assessment. Fisheries
 Research 204: 275-288.</a>
+
+fishblicc is a length-based catch-curve model (Paul A. H. Medley 2025)
+implemented in an R package (Paul A. H. Medley 2023).
 
 # Installation
 
@@ -315,3 +323,24 @@ table_HCR_performance(BestHCR)
 ```
 
 <img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+
+<div id="ref-medley2025" class="csl-entry">
+
+Medley, Paul A H. 2025. “A New Bayesian Catch Curve Stock Assessment
+Model for the Analysis of Length Data from Multi-Gear Fisheries.” Edited
+by Jan Jaap Poos. *ICES Journal of Marine Science* 82 (12): fsaf224.
+<https://doi.org/10.1093/icesjms/fsaf224>.
+
+</div>
+
+<div id="ref-medley2023" class="csl-entry">
+
+Medley, Paul A. H. 2023. “Fishblicc: Bayesian Length Interval Catch
+Curve.” <https://github.com/PaulAHMedley/fishblicc>.
+
+</div>
+
+</div>
