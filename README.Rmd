@@ -1,5 +1,6 @@
 ---
 output: github_document
+bibliography: references.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -14,7 +15,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-# JABBA HCR
+# fishblicc HCR
+
+This package is being superseded by a more generally approach that provides a simulation add-on to fishblicc, a Stan version of JABBA as well as JABBA as developed here. Therefore this repository will no loner be updated.
 
 This is an extension to the stock assessment state space production model JABBA (Winker et al. 2018) that allows testing of index-based linear harvest control rules against projections of the JABBA model. This is a management strategy evaluation in that the linear index-based HCR is simpler than the JABBA production operating model, but clearly scenarios that can be tested are more limited. This package is designed to identify index-based HCR that are consistent with management objectives based on a series of plausible fits of the JABBA model.
 
@@ -25,6 +28,8 @@ JABBA is able to capture uncertainty, but this is difficult to use in decision-m
 ***WARNING: This software has not undergone much testing and so may well have bugs. It seems to work...***
 
 [Winker, H., Carvalho, F., Kapur, M. (2018) JABBA: Just Another Bayesian Biomass Assessment. Fisheries Research 204: 275-288.](https://www.sciencedirect.com/science/article/pii/S0165783618300845 "JABBA Reference"){.uri}
+
+fishblicc is a length-based catch-curve model [@medley2025] implemented in an R package [@medley2023].
 
 # Installation
 
@@ -39,17 +44,17 @@ JABBA is not required for this software, but clearly will be needed to generate 
 
 # Workflow
 
-Typically, stock assessment evaluation using linear index-based harvest control rules would follow: 
+Typically, stock assessment evaluation using linear index-based harvest control rules would follow:
 
-1. Generate one or more accepted JABBA fits using the JABBA package. 
+1.  Generate one or more accepted JABBA fits using the JABBA package.
 
-2. Define the linear HCR, ma, change_limit ranges to test and generate one or more HCR within a tibble 
+2.  Define the linear HCR, ma, change_limit ranges to test and generate one or more HCR within a tibble
 
-3. Run all HCR to be tested on JABBA fit projections, generating performance indicators for each HCR. 
+3.  Run all HCR to be tested on JABBA fit projections, generating performance indicators for each HCR.
 
-4. Generate plots and tables of HCR performance. Identify HCR to be rejected if they do not meet status objectives. 
+4.  Generate plots and tables of HCR performance. Identify HCR to be rejected if they do not meet status objectives.
 
-5. Find "best performing" HCR based on relative performance.
+5.  Find "best performing" HCR based on relative performance.
 
 Steps 2-5 can be repeated with different defined HCR, for example fine tuning HCR trigger points.
 
