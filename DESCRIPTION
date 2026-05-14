@@ -1,15 +1,17 @@
-Package: JABBAHCR
-Title: Test Index-based Linear HCR using JABBA model projections
-Version: 0.95
+Package: BIBCRE
+Title: Bayesian Index-based Control Rule Evaluations
+Version: 0.4
 Authors@R: 
     person("Paul", "Medley", , "paulahmedley@gmail.com", role = c("aut", "cre"))
-Description: This is an extension to the stock assessment state space
-    production model JABBA that allows testing of index-based linear
-    harvest control rules against projections of the JABBA model. This is
-    a management strategy evaluation in that the linear index-based HCR is
-    simpler than the JABBA production operating model. This package is able to
-    test whether an HCR achieves objectives based on a series of plausible
-    JABBA modelfits.
+Description: The package is able to test whether an HCR achieves objectives 
+    based on a series of plausible stock assessment model fits. This is an 
+    extension to three data limited stock assessments. 1. state space
+    production model JABBA, 2. a Stan version of JABBA and 3. a length-based 
+    catch curve fishblicc. The package uses posterior (MCMC parameter) draws from these 
+    models in projections to test simple index-based linear harvest control 
+    rules. These are management strategy evaluations in that the linear index-based HCR is
+    simpler than the stock assessment operating model, but constrained to the
+    data limited stock assessments. 
 License: GPL (>= 3)
 Imports: 
     stats,
@@ -19,15 +21,17 @@ Imports:
     tidyselect,
     flextable,
     ggplot2,
-    purrr
+    purrr,
+    future,
+    furrr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1)
 LazyData: true
-URL: https://github.com/PaulAHMedley/JABBAHCR
-BugReports: https://github.com/PaulAHMedley/JABBAHCR/issues
+URL: https://github.com/PaulAHMedley/BIBCRE
+BugReports: https://github.com/PaulAHMedley/BIBCRE/issues
+Config/roxygen2/version: 8.0.0

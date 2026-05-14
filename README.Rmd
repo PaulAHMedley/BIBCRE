@@ -15,50 +15,52 @@ knitr::opts_chunk$set(
 )
 ```
 
-# fishblicc HCR
+Tasks
 
-This package is being superseded by a more generally approach that provides a simulation add-on to fishblicc, a Stan version of JABBA as well as JABBA as developed here. Therefore this repository will no loner be updated.
+Combine JABBA and JABBAstan functions as much as possible, so they use the same HCR functions
 
-This is an extension to the stock assessment state space production model JABBA (Winker et al. 2018) that allows testing of index-based linear harvest control rules against projections of the JABBA model. This is a management strategy evaluation in that the linear index-based HCR is simpler than the JABBA production operating model, but clearly scenarios that can be tested are more limited. This package is designed to identify index-based HCR that are consistent with management objectives based on a series of plausible fits of the JABBA model.
+Ensure Outputs from all HCR functions are consistent as far as possible, so all graphs and tables functions run seemlessly, including the HCR evaluation function.
 
-Index-based means it treats CPUE as a linear index of abundance - the same assumption as in JABBA itself. The CPUE is used to calculate an index which then leads to adjustments in the control, either effort or catch limits. Controls such as closed areas or seasons would need to be translated into effort or catch limits to be applied in this model.
+-   Check
 
-JABBA is able to capture uncertainty, but this is difficult to use in decision-making in raw form. Using HCR enables the implications of this uncertainty to be evaluated through projections using risk-based reference points.
+# Bayesian Index Based Management Strategy Evaluations
+
+This is an extension package for evaluating index-based harvest control rules for stock assessment state space production model JABBA ([@winker2018]), a Stan version of the JABBA model and a length-based catch curve fishblicc[@medley2025]. The package allows testing of index-based linear harvest control rules against projections of these stock assessment models. This is a management strategy evaluation in that the linear index-based HCR is simpler than the stock assessment operating model, but clearly scenarios that can be tested are much more limited than software such as openMSE and FLR. The main advantage is that these evaluations can be undertaken very rapidly as an extension to the stock assessment and help incorporate uncertainty from the assessment into the scientific advice to management.
+
+This package is designed to identify index-based HCR that are consistent with management objectives based on a series of plausible fits of the stock assessment model.
+
+Index-based means it treats the calculated index as an index of abundance or mortality - the same assumption as in the stock assessment models. For the production models, the CPUE is used to calculate an index which then leads to adjustments in the control, either effort or catch limits. For the length-based catch curve, mean length is used as a proxy of fishing mortality. Controls such as closed areas or seasons would need to be translated into effort or catch limits or changes in selectivity to be applied in the simulations.
 
 ***WARNING: This software has not undergone much testing and so may well have bugs. It seems to work...***
 
-[Winker, H., Carvalho, F., Kapur, M. (2018) JABBA: Just Another Bayesian Biomass Assessment. Fisheries Research 204: 275-288.](https://www.sciencedirect.com/science/article/pii/S0165783618300845 "JABBA Reference"){.uri}
-
-fishblicc is a length-based catch-curve model [@medley2025] implemented in an R package [@medley2023].
-
 # Installation
 
-You can install the current version of JABBAHCR:
+You can install the current version of BIBMSE:
 
 ``` r
 if (! require("remotes")) install.packages("remotes")
-remotes::install_github("PaulAHMedley/JABBAHCR")
+remotes::install_github("PaulAHMedley/BIBMSE")
 ```
 
-JABBA is not required for this software, but clearly will be needed to generate a fit of the model. See <https://github.com/jabbamodel/JABBA> for installing and using JABBA.
+The stock assessment software is not a requirement to run the simulations, but clearly will be required to generate the model fits that are then used in this software.
+
+See <https://github.com/jabbamodel/JABBA> for installing and using JABBA.
 
 # Workflow
 
 Typically, stock assessment evaluation using linear index-based harvest control rules would follow:
 
-1.  Generate one or more accepted JABBA fits using the JABBA package.
+1.  Generate one or more accepted stock assessment fits using the relevant package.
 
-2.  Define the linear HCR, ma, change_limit ranges to test and generate one or more HCR within a tibble
+2.  Define the linear control rules, moving average parameter (ma), change_limit ranges to test and generate one or more HCR within a tibble
 
-3.  Run all HCR to be tested on JABBA fit projections, generating performance indicators for each HCR.
+3.  Run all HCR to be tested on stock assessment fit projections, generating performance indicators for each HCR.
 
 4.  Generate plots and tables of HCR performance. Identify HCR to be rejected if they do not meet status objectives.
 
 5.  Find "best performing" HCR based on relative performance.
 
 Steps 2-5 can be repeated with different defined HCR, for example fine tuning HCR trigger points.
-
-The jabba fits can be a single fit or list of fits produced by JABBA. This package does not use JABBA directly, but is used to process JABBA output.
 
 # Example
 
@@ -211,3 +213,5 @@ The performance indicators for these "best" HCR can be presented in a table.
 ```{r}
 table_HCR_performance(BestHCR)
 ```
+
+## Reference

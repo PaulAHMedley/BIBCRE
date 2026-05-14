@@ -11,3 +11,12 @@
 ^JABBAHCR\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^Development\.qmd$
+^references\.bib$
+^FMA6_Decapterus_macarellus_SPR_HCR\.qmd$
+^output$
+^Decapterus macarellus_SPR\.rda$
+^Nephrops_my_ds_mcmc\.rda$
+^TCIConch04_stan\.rda$
+^Suriname_Seabob_JABBA_HCR\.qmd$
+^TCI_Conch_JABBAStan_HCR\.qmd$
