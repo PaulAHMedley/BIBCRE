@@ -9,12 +9,14 @@ Only works with single controls.}
 define_HCR_test_range(
   IMSY,
   fMSY,
+  control_type,
   rel_index_range = c(0.5, 1),
   rel_control_range = c(0.1, 1),
   NInflex = 2L,
   NBreaks = 5L,
   change_limit = NA,
-  ma = 0.5
+  ma = 0.5,
+  ctrl_pF = 1
 )
 }
 \arguments{
@@ -37,6 +39,9 @@ test HCR}
 no limit}
 
 \item{ma}{Moving average parameter for index time series}
+
+\item{ctrl_pF}{Effectiveness of the control (what proportion the harvest
+activity is adjusted)}
 }
 \value{
 A tibble of all combinations of index, control, control change limit,

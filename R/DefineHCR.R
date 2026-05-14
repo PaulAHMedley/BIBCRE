@@ -16,18 +16,22 @@
 #' @param  NInflex The number of inflexion (trigger) points for the linear HCR
 #' @param  change_limit Limit on the annual change of the control. NA implies 
 #'   no limit
+#' @param  ctrl_pF Effectiveness of the control (what proportion the harvest 
+#'   activity is adjusted)
 #' @param  ma  Moving average parameter for index time series
 #' @return A tibble of all combinations of index, control, control change limit,
 #'   and moving average parameters for the HCR. 
 #' @export
 #' 
 define_HCR_test_range <- function(IMSY, fMSY, 
+                                  control_type,
                                   rel_index_range = c(0.5, 1.0),
                                   rel_control_range = c(0.1, 1.0), 
                                   NInflex = 2L, 
                                   NBreaks = 5L, 
                                   change_limit = NA, 
-                                  ma = 0.5) {
+                                  ma = 0.5,
+                                  ctrl_pF = 1) {
   NInflex <- as.integer(NInflex) 
   NBreaks <- as.integer(NBreaks) 
   Controls <- seq(rel_control_range[1], rel_control_range[2], length.out=NBreaks) * fMSY # Index values intervention points
@@ -63,7 +67,9 @@ define_HCR_test_range <- function(IMSY, fMSY,
   
   df <- tidyr::expand_grid(trIndex, trControl, change_limit, ma) |> 
     dplyr::bind_rows(fx_df) |>    # where controls are fixed, only 1 HCR is required
-    dplyr::mutate(ID = dplyr::row_number()) |> 
+    dplyr::mutate(ID = dplyr::row_number(),
+                  control_type = control_type,
+                  ctrl_pF = 1) |>
     dplyr::select(ID, dplyr::everything())
   
   return(df)
@@ -253,10 +259,10 @@ graph_linear_HCR <- function(HCR_df,
                              HCR_sim = NULL,
                              HCR_ID = TRUE) {
   listify <- function(x) if (is.list(x)) x else list(x)
-  HCRorder <- dplyr::select(mutate(HCR_df, ID = ID, order=factor(dplyr::row_number())), ID, order)
+  HCRorder <- dplyr::select(dplyr::mutate(HCR_df, ID = ID, order=factor(dplyr::row_number())), ID, order)
   
   line_df <- HCR_df |>
-    ungroup() |>
+    dplyr::ungroup() |>
     dplyr::mutate(trIndex = purrr::map(trIndex, ~ purrr::pluck(listify(.x), ctrl_index)),
                   trControl = purrr::map(trControl, ~ purrr::pluck(listify(.x), ctrl_index))) |>
     dplyr::select(ID, trIndex, trControl) |>
@@ -274,24 +280,28 @@ graph_linear_HCR <- function(HCR_df,
     dplyr::ungroup()
   
   line_df <- dplyr::bind_rows(line_df, lo_df, hi_df) |>
-    left_join(HCRorder, by="ID") |>
-    arrange(order, trIndex)
+    dplyr::left_join(HCRorder, by="ID") |>
+    dplyr::arrange(order, trIndex)
   
-  gp <- ggplot2::ggplot(line_df, aes(x = trIndex, y = trControl, group = order)) +
+  gp <- ggplot2::ggplot(line_df, 
+                        ggplot2::aes(x = trIndex, y = trControl, group = order)) +
     ggplot2::geom_line() +
     ggplot2::labs(y = "Control", x = "HCR Index") +
     ggplot2::coord_cartesian( y = c(0, NA))
   
   if (HCR_ID & nrow(HCR_df) <= 12) {
     id_labels <- with(HCRorder, setNames(as.character(ID), as.character(order)))
-    gp <- gp + facet_wrap(vars(order), labeller=labeller(order = id_labels))
+    gp <- gp + ggplot2::facet_wrap(ggplot2::vars(order), 
+                                   labeller=ggplot2::labeller(order = id_labels))
   }
   if (!is.null(HCR_sim)) {
     pv_df <- tibble::tibble(pvIndex = pvIndex, pvControl = pvControl)
     tr_df <- tibble::tibble(trIndex = trIndex, trControl = trControl)
     gp <- gp +
-      ggplot2::geom_point(pv_df, aes(x = pvIndex, y = pvControl)) +
-      ggplot2::geom_line(tr_df, aes(x = pvIndex, y = pvControl), color = "blue")
+      ggplot2::geom_point(pv_df, 
+                          ggplot2::aes(x = pvIndex, y = pvControl)) +
+      ggplot2::geom_line(tr_df, 
+                         ggplot2::aes(x = pvIndex, y = pvControl), color = "blue")
   }
   return(gp)
 }

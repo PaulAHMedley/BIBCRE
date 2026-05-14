@@ -285,15 +285,15 @@ JABBA_mean_CPUE <- function(jabbafit) {
 JABBA_MSY_refpt <- function(jabba_list, 
                       ref_year = NULL) {
   
-  jabba_list <- convert_jabba2list(jabba_list)
+  jabba_list <- JABBA_convert2list(jabba_list)
   if (is.null(ref_year)) ref_year <- max(jabba_fit[[1]]$yr) 
   H_ref <- HMSY <- IMSY <- MSY <- m_ <- double(0)
   for (i in 1:length(jabba_list)) {
-    Average_CPUE <- create_mean_CPUE(jabba_list[[i]]) # A function to combine multiple indices into a single index
+    Average_CPUE <- JABBA_mean_CPUE(jabba_list[[i]]) # A function to combine multiple indices into a single index
     H_ref <- c(H_ref, dplyr::pull(dplyr::filter(jabba_list[[i]]$kbtrj, year==ref_year), H))
     HMSY <- - log(1-c(HMSY, jabba_list[[i]]$pfunc$Hmsy))
     MSY <- c(MSY, jabba_list[[i]]$pfunc$MSY)
-    IMSY = c(IMSY, Average_CPUE(CPUE_MSY(jabba_list[[i]])))
+    IMSY = c(IMSY, Average_CPUE(JABBA_CPUE_MSY(jabba_list[[i]])))
     m_ <- c(m_, jabba_list[[i]]$pars_posterior$m)
   }
   F_ref <- - log( 1 - median(H_ref) )
@@ -332,7 +332,7 @@ JABBA_CPUE_MSY <- function(jabba_fit) {
 #' @return jabba_fit in a list 
 #' @export
 #' 
-JABBA_convert_jabba2list <- function(jabba_fit) {
+JABBA_convert2list <- function(jabba_fit) {
   
   if ( ! is.null(jabba_fit$assessment)) jabba_fit <- list(jabba_fit) # turn jabba_fit into a list of fits if necessary
   
@@ -365,7 +365,7 @@ run_JABBA_MSE_list <- function(
     nsim = 1000,
     ref_pt = standard_risk_ref_pt()) {
 
-  jabba_list <- convert_jabba2list(jabba_list)  
+  jabba_list <- JABBA_convert2list(jabba_list)  
   HCR_res <- list()
 
   # Each fit is run in the MSE HCR simulations

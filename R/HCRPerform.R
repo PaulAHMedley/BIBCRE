@@ -62,7 +62,7 @@ HCR_performance <- function(HCR_sim) {
   Err_Type2 <- 0.5*mean(((Bt < B_lim) & (Index > lo_trigger)) +
                           ((Bt < B_lim) & (Index > hi_trigger)))
   
-  return(tibble(
+  return(tibble::tibble(
     Catch_Avg = Catch_Avg,
     Catch_Rng = Catch_Rng,
     Catch_pcile = Catch_pcile,
@@ -281,7 +281,7 @@ table_HCR_performance <- function(HCR_df) {
 #' @export
 #'
 combine_HCR_results <- function(HCR_res, HCR_df, HCR_MSE) {
-  HCR_res <- bind_rows(HCR_res)
+  HCR_res <- dplyr::bind_rows(HCR_res)
   # Higher rank is better
   df <- HCR_res |>
     dplyr::group_by(ID) |>

@@ -15,17 +15,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-Tasks
-
-Combine JABBA and JABBAstan functions as much as possible, so they use the same HCR functions
-
-Ensure Outputs from all HCR functions are consistent as far as possible, so all graphs and tables functions run seemlessly, including the HCR evaluation function.
-
--   Check
-
 # Bayesian Index Based Management Strategy Evaluations
 
-This is an extension package for evaluating index-based harvest control rules for stock assessment state space production model JABBA ([@winker2018]), a Stan version of the JABBA model and a length-based catch curve fishblicc[@medley2025]. The package allows testing of index-based linear harvest control rules against projections of these stock assessment models. This is a management strategy evaluation in that the linear index-based HCR is simpler than the stock assessment operating model, but clearly scenarios that can be tested are much more limited than software such as openMSE and FLR. The main advantage is that these evaluations can be undertaken very rapidly as an extension to the stock assessment and help incorporate uncertainty from the assessment into the scientific advice to management.
+This is an extension package for evaluating index-based harvest control rules for stock assessment state space production model JABBA ([@winker2018]), a Stan version of the JABBA model and a length-based catch curve fishblicc [@medley2025]. The package allows testing of index-based linear harvest control rules against projections of these stock assessment models. This is a management strategy evaluation in that the linear index-based HCR is simpler than the stock assessment operating model, but clearly scenarios that can be tested are much more limited than software such as openMSE and FLR. The main advantage is that these evaluations can be undertaken very rapidly as an extension to the stock assessment and help incorporate uncertainty from the assessment into the scientific advice to management.
 
 This package is designed to identify index-based HCR that are consistent with management objectives based on a series of plausible fits of the stock assessment model.
 
@@ -33,20 +25,20 @@ Index-based means it treats the calculated index as an index of abundance or mor
 
 ***WARNING: This software has not undergone much testing and so may well have bugs. It seems to work...***
 
-# Installation
+## Installation
 
 You can install the current version of BIBMSE:
 
 ``` r
 if (! require("remotes")) install.packages("remotes")
-remotes::install_github("PaulAHMedley/BIBMSE")
+remotes::install_github("PaulAHMedley/BIBCRE")
 ```
 
 The stock assessment software is not a requirement to run the simulations, but clearly will be required to generate the model fits that are then used in this software.
 
 See <https://github.com/jabbamodel/JABBA> for installing and using JABBA.
 
-# Workflow
+## Workflow
 
 Typically, stock assessment evaluation using linear index-based harvest control rules would follow:
 
@@ -62,7 +54,7 @@ Typically, stock assessment evaluation using linear index-based harvest control 
 
 Steps 2-5 can be repeated with different defined HCR, for example fine tuning HCR trigger points.
 
-# Example
+## Example
 
 In this simple example, we look at alternative harvest control rules (HCR) that might be applied. This is useful not only to identify HCR, but also possible risk based reference points that might be used instead of the median MSY reference point, for example.
 
@@ -73,27 +65,26 @@ The model only supports controls on fishing of effort or catch. In this case, we
 We can run a quick test by creating a linear HCR that just applies a fixed level of effort unless the index below the MSY point, when it reduces effort down to zero at 25% of the MSY level (i.e. point when the fishery closes). This is done by creating the HCR function based on the JABBA model fit, then extracting the MSY median reference points from the JABBA fit and use these reference points to define and run an HCR in the JABBA projections.
 
 ```{r, output = FALSE}
-library("JABBAHCR")
+library("BIBCRE")
 ggplot2::theme_set(ggplot2::theme_classic())
-HCR <- create_HCR_MSE(jabba_seabob, 
-                       control_type = "Effort",
-                       ProjLength=50, 
+HCR <- create_JABBA_MSE(jabba_seabob,
+                       proj_length=50, 
                        nsim=1000)
 
-ref_pt <- MSY_refpt(jabba_seabob, ref_year=2022)
-HCR_sim <- with(ref_pt, HCR(c(IMSY*0.25, IMSY), c(0, fMSY), change_limit=NA, ma=0.5))
+ref_pt <- JABBA_MSY_refpt(jabba_seabob, ref_year=2022)
+HCR_sim <- with(ref_pt, HCR(c(IMSY*0.25, IMSY), c(0, FMSY), control_type="Effort", change_limit=NA, ma=0.5))
 ```
 
 The harvest control rule can be plotted.
 
 ```{r}
-with(ref_pt, graph_linear_HCR(data.frame(ID=1, trIndex = c(IMSY*0.25, IMSY), trControl=c(0, fMSY), change_limit=NA, ma=0.5)))
+with(ref_pt, graph_linear_HCR(tibble::tibble(ID=1, trIndex = list(c(IMSY*0.25, IMSY)), trControl=list(c(0, FMSY)), change_limit=NA, ma=0.5)))
 ```
 
 An individual HCR simulation projection can be plotted.
 
 ```{r }
-graph_sim_BMSY_FMSY(HCR_sim, type="both")
+graph_sim_Btar_Ftar(HCR_sim, type="both")
 ```
 
 And the proportion of the simulation spent in each status range based on the reference points.
@@ -130,15 +121,17 @@ NBreaks = 5
 change_limit = c(NA, 0.05, 0.15)
 ma = c(0.25, 0.5, 0.75)
 
-Control_Type <- "Effort"  # Effort or Catch
-TestHCR_df <- define_HCR_test_range(ref_pt$IMSY, ref_pt$fMSY, 
+TestHCR_df <- define_HCR_test_range(ref_pt$IMSY, ref_pt$FMSY, 
+                         control_type = "Effort",
                          rel_index_range = c(0.5, 1.2),
                          rel_control_range = c(0.0, 1.2), 
                          NInflex = 2, 
                          NBreaks = 5, 
                          change_limit = c(NA, 0.05, 0.15), 
-                         ma = c(0.25, 0.5, 0.75)) |>
-              dplyr::filter(purrr::map_lgl(trControl, ~ sum(.) > 0)) # remove the no fishing HCR
+                         ma = c(0.25, 0.5, 0.75),
+                         ctrl_pF = 1) |>
+  dplyr::filter(purrr::map_lgl(trControl, ~ sum(.) > 0)) |> # remove the no fishing
+  dplyr::mutate()
 
 graph_linear_HCR(TestHCR_df)
 ```
@@ -150,16 +143,9 @@ For the change limit, the maximum proportional change in the control from year t
 The moving average parameter is a simple smoother on the index defining the weight on the most recent observed CPUE value, so $I_{t+1} = ma \ C/f + (ma - 1) I_t$. A value of 1.0 just uses the current index with no smoothing, and a value of 0 means the index remains constant and does not change. The most recent observation is weight more heavily the closer `ma` is to 1.0.
 
 ```{r, include = FALSE}
-nsim <- 1000
-risk_rp <- standard_risk_ref_pt()
 
-HCR_res <- run_HCR_MSE_list(
-    jabba_seabob, 
-    TestHCR_df, 
-    control_type = "Effort",
-    ProjLength=50, 
-    nsim = nsim,
-    ref_pt = risk_rp)
+HCR_res <- run_HCR_MSE(TestHCR_df, HCR)
+
 ```
 
 Each alternative HCR can be plotted in terms of status and in terms of catches, which represent the two main performance criteria. The management objective is presumed to be to keep the stock around the MSY level while maximising catches. The candidate HCR are identified on this basis.

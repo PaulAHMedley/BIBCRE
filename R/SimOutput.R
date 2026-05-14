@@ -48,7 +48,6 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
       rsl_F <- with(HCR_sim, tibble::tibble(year = rep(years, each=HCR$nsim),
                                             Var = "F", 
                                             Val = as.vector(pFtar)))
-      rm(FMSY, FFMSY)
     }
     
     ## Biomass
@@ -76,7 +75,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
   
   ggp <- df |>
     dplyr::filter(!is.na(Val), Val > 0, Val < maxvalue) |>
-    ggplot2::ggplot(aes(x=year, y=Val)) +
+    ggplot2::ggplot(ggplot2::aes(x=year, y=Val)) +
     ggplot2::geom_bin2d(binwidth = c(binwidth_x, binwidth_y), na.rm = TRUE) +
     ggplot2::scale_y_continuous(limits = c(0, maxvalue)) +
     ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN))+
@@ -86,7 +85,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
 
   if (type == "both")
     return(ggp +
-             ggplot2::facet_wrap(dplyr::vars(Var), nrow=2, scales="free_y") +
+             ggplot2::facet_wrap(ggplot2::vars(Var), nrow=2, scales="free_y") +
              ggplot2::labs(x="Year",
                            y=paste0("SSB / F relative to target ", rp_basis)))
   
@@ -123,7 +122,7 @@ graph_sim_catch <- function(HCR_sim) {
   }
   binwidth_x <- 1   # one time step per bin
   binwidth_y <- diff(quantile(rsl_C$Catch, c(0.01, 0.99))) / 50  
-  ggplot2::ggplot(rsl_C, aes(x=year, y=Catch)) +
+  ggplot2::ggplot(rsl_C, ggplot2::aes(x=year, y=Catch)) +
     ggplot2::geom_bin2d(binwidth = c(binwidth_x, binwidth_y)) +
     ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN)) +
     ggplot2::scale_fill_gradient(low = "#96B1F7", high = "#030B43") +

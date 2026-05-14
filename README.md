@@ -1,70 +1,67 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# fishblicc HCR
+# Bayesian Index Based Management Strategy Evaluations
 
-This package is being superseded by a more generally approach that
-provides a simulation add-on to fishblicc, a Stan version of JABBA as
-well as JABBA as developed here. Therefore this repository will no loner
-be updated.
+This is an extension package for evaluating index-based harvest control
+rules for stock assessment state space production model JABBA ((Winker,
+Carvalho, and Kapur 2018)), a Stan version of the JABBA model and a
+length-based catch curve fishblicc (Medley 2025). The package allows
+testing of index-based linear harvest control rules against projections
+of these stock assessment models. This is a management strategy
+evaluation in that the linear index-based HCR is simpler than the stock
+assessment operating model, but clearly scenarios that can be tested are
+much more limited than software such as openMSE and FLR. The main
+advantage is that these evaluations can be undertaken very rapidly as an
+extension to the stock assessment and help incorporate uncertainty from
+the assessment into the scientific advice to management.
 
-This is an extension to the stock assessment state space production
-model JABBA (Winker et al. 2018) that allows testing of index-based
-linear harvest control rules against projections of the JABBA model.
-This is a management strategy evaluation in that the linear index-based
-HCR is simpler than the JABBA production operating model, but clearly
-scenarios that can be tested are more limited. This package is designed
-to identify index-based HCR that are consistent with management
-objectives based on a series of plausible fits of the JABBA model.
+This package is designed to identify index-based HCR that are consistent
+with management objectives based on a series of plausible fits of the
+stock assessment model.
 
-Index-based means it treats CPUE as a linear index of abundance - the
-same assumption as in JABBA itself. The CPUE is used to calculate an
+Index-based means it treats the calculated index as an index of
+abundance or mortality - the same assumption as in the stock assessment
+models. For the production models, the CPUE is used to calculate an
 index which then leads to adjustments in the control, either effort or
-catch limits. Controls such as closed areas or seasons would need to be
-translated into effort or catch limits to be applied in this model.
-
-JABBA is able to capture uncertainty, but this is difficult to use in
-decision-making in raw form. Using HCR enables the implications of this
-uncertainty to be evaluated through projections using risk-based
-reference points.
+catch limits. For the length-based catch curve, mean length is used as a
+proxy of fishing mortality. Controls such as closed areas or seasons
+would need to be translated into effort or catch limits or changes in
+selectivity to be applied in the simulations.
 
 ***WARNING: This software has not undergone much testing and so may well
 have bugs. It seems to work…***
 
-<a
-href="https://www.sciencedirect.com/science/article/pii/S0165783618300845"
-class="uri" title="JABBA Reference">Winker, H., Carvalho, F., Kapur, M.
-(2018) JABBA: Just Another Bayesian Biomass Assessment. Fisheries
-Research 204: 275-288.</a>
+## Installation
 
-fishblicc is a length-based catch-curve model (Paul A. H. Medley 2025)
-implemented in an R package (Paul A. H. Medley 2023).
-
-# Installation
-
-You can install the current version of JABBAHCR:
+You can install the current version of BIBMSE:
 
 ``` r
 if (! require("remotes")) install.packages("remotes")
-remotes::install_github("PaulAHMedley/JABBAHCR")
+remotes::install_github("PaulAHMedley/BIBCRE")
 ```
 
-JABBA is not required for this software, but clearly will be needed to
-generate a fit of the model. See <https://github.com/jabbamodel/JABBA>
-for installing and using JABBA.
+The stock assessment software is not a requirement to run the
+simulations, but clearly will be required to generate the model fits
+that are then used in this software.
 
-# Workflow
+See <https://github.com/jabbamodel/JABBA> for installing and using
+JABBA.
+
+## Workflow
 
 Typically, stock assessment evaluation using linear index-based harvest
 control rules would follow:
 
-1.  Generate one or more accepted JABBA fits using the JABBA package.
+1.  Generate one or more accepted stock assessment fits using the
+    relevant package.
 
-2.  Define the linear HCR, ma, change_limit ranges to test and generate
-    one or more HCR within a tibble
+2.  Define the linear control rules, moving average parameter (ma),
+    change_limit ranges to test and generate one or more HCR within a
+    tibble
 
-3.  Run all HCR to be tested on JABBA fit projections, generating
-    performance indicators for each HCR.
+3.  Run all HCR to be tested on stock assessment fit projections,
+    generating performance indicators for each HCR.
 
 4.  Generate plots and tables of HCR performance. Identify HCR to be
     rejected if they do not meet status objectives.
@@ -74,11 +71,7 @@ control rules would follow:
 Steps 2-5 can be repeated with different defined HCR, for example fine
 tuning HCR trigger points.
 
-The jabba fits can be a single fit or list of fits produced by JABBA.
-This package does not use JABBA directly, but is used to process JABBA
-output.
-
-# Example
+## Example
 
 In this simple example, we look at alternative harvest control rules
 (HCR) that might be applied. This is useful not only to identify HCR,
@@ -100,32 +93,31 @@ the JABBA fit and use these reference points to define and run an HCR in
 the JABBA projections.
 
 ``` r
-library("JABBAHCR")
+library("BIBCRE")
 ggplot2::theme_set(ggplot2::theme_classic())
-HCR <- create_HCR_MSE(jabba_seabob, 
-                       control_type = "Effort",
-                       ProjLength=50, 
+HCR <- create_JABBA_MSE(jabba_seabob,
+                       proj_length=50, 
                        nsim=1000)
 
-ref_pt <- MSY_refpt(jabba_seabob, ref_year=2022)
-HCR_sim <- with(ref_pt, HCR(c(IMSY*0.25, IMSY), c(0, fMSY), change_limit=NA, ma=0.5))
+ref_pt <- JABBA_MSY_refpt(jabba_seabob, ref_year=2022)
+HCR_sim <- with(ref_pt, HCR(c(IMSY*0.25, IMSY), c(0, FMSY), control_type="Effort", change_limit=NA, ma=0.5))
 ```
 
 The harvest control rule can be plotted.
 
 ``` r
-with(ref_pt, graph_linear_HCR(data.frame(ID=1, trIndex = c(IMSY*0.25, IMSY), trControl=c(0, fMSY), change_limit=NA, ma=0.5)))
+with(ref_pt, graph_linear_HCR(tibble::tibble(ID=1, trIndex = list(c(IMSY*0.25, IMSY)), trControl=list(c(0, FMSY)), change_limit=NA, ma=0.5)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="" width="100%" />
 
 An individual HCR simulation projection can be plotted.
 
 ``` r
-graph_sim_BMSY_FMSY(HCR_sim, type="both")
+graph_sim_Btar_Ftar(HCR_sim, type="both")
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" alt="" width="100%" />
 
 And the proportion of the simulation spent in each status range based on
 the reference points.
@@ -134,7 +126,7 @@ the reference points.
 table_sim_status(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="50%" height="50%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="50%" height="50%" />
 
 The HCR decision-making can be evaluated to some extent by checking
 whether its responses are coordinated to changes in stock status. The
@@ -149,7 +141,7 @@ should be performing.
 table_sim_decision(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="50%" height="50%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" alt="" width="50%" height="50%" />
 
 Various performance indicators are recorded consisting of measures of
 catch (average, range and lower percentile) and stock status (measures
@@ -166,7 +158,7 @@ necessarily clarify comparisons between HCR.
 table_sim_performance(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" alt="" width="100%" />
 
 To test a range of HCRs, they can be defined in a data frame (tibble),
 where each row defines an HCR to be tested. To do this, we define
@@ -194,20 +186,22 @@ NBreaks = 5
 change_limit = c(NA, 0.05, 0.15)
 ma = c(0.25, 0.5, 0.75)
 
-Control_Type <- "Effort"  # Effort or Catch
-TestHCR_df <- define_HCR_test_range(ref_pt$IMSY, ref_pt$fMSY, 
+TestHCR_df <- define_HCR_test_range(ref_pt$IMSY, ref_pt$FMSY, 
+                         control_type = "Effort",
                          rel_index_range = c(0.5, 1.2),
                          rel_control_range = c(0.0, 1.2), 
                          NInflex = 2, 
                          NBreaks = 5, 
                          change_limit = c(NA, 0.05, 0.15), 
-                         ma = c(0.25, 0.5, 0.75)) |>
-              dplyr::filter(purrr::map_lgl(trControl, ~ sum(.) > 0)) # remove the no fishing HCR
+                         ma = c(0.25, 0.5, 0.75),
+                         ctrl_pF = 1) |>
+  dplyr::filter(purrr::map_lgl(trControl, ~ sum(.) > 0)) |> # remove the no fishing
+  dplyr::mutate()
 
 graph_linear_HCR(TestHCR_df)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="100%" />
 
 In addition, we define three alternate limits of the control change from
 year to year, and three alternate moving average smoothing parameters.
@@ -244,7 +238,7 @@ criteria.
 graph_HCR_status(HCR_res, HCR)
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" alt="" width="100%" />
 
 The other measures of performance are related to catches. The average
 catch and annual changes in catch are usually of interest. This is
@@ -259,7 +253,7 @@ increasing the catch more relative to the increase in catch range.
 graph_HCR_catches(HCR_res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" alt="" width="100%" />
 
 In reviewing the HCR, it is worth evaluating its decision-making to see
 how it might be improved. The HCR can make two mistakes: not responding
@@ -272,7 +266,7 @@ worse, but the fewer mistakes the better the HCR should be performing.
 graph_HCR_decision(HCR_res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="" width="100%" />
 
 The lowest annual catch represented by the lower 10 percentile can be
 checked in relation to the change limit. Annual change limits are often
@@ -287,7 +281,7 @@ CandidateHCR_df <- HCR_res |>
 graph_HCR_status_catches(CandidateHCR_df)
 ```
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="" width="100%" />
 
 HCRs can be subset and plotted. For example, the top 5 HCRs with respect
 to status performance (proportion of the time in the target minus the
@@ -301,7 +295,7 @@ CandidateHCR_df |>
   graph_linear_HCR(HCR_ID=TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" alt="" width="100%" />
 
 Or the twelve highest ranking linear HCRs can be plotted. Rank is based
 on performance in relation to stock status and catch.
@@ -313,7 +307,7 @@ BestHCR <- CandidateHCR_df |>
 graph_linear_HCR(BestHCR, HCR_ID=TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" alt="" width="100%" />
 
 The performance indicators for these “best” HCR can be presented in a
 table.
@@ -322,7 +316,9 @@ table.
 table_HCR_performance(BestHCR)
 ```
 
-<img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" alt="" width="100%" />
+
+## Reference
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 entry-spacing="0">
@@ -336,10 +332,11 @@ by Jan Jaap Poos. *ICES Journal of Marine Science* 82 (12): fsaf224.
 
 </div>
 
-<div id="ref-medley2023" class="csl-entry">
+<div id="ref-winker2018" class="csl-entry">
 
-Medley, Paul A. H. 2023. “Fishblicc: Bayesian Length Interval Catch
-Curve.” <https://github.com/PaulAHMedley/fishblicc>.
+Winker, Henning, Felipe Carvalho, and Maia Kapur. 2018. “JABBA: Just
+Another Bayesian Biomass Assessment.” *Fisheries Research* 204 (August):
+275288. <https://doi.org/10.1016/j.fishres.2018.03.010>.
 
 </div>
 

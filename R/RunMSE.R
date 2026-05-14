@@ -92,7 +92,9 @@ evaluate_HCR <- function(HCR_df, HCR_MSE) {
   HCR_df$Catch_Rank <- Ranks - rank(HCR_df$Catch_pcile)   
   HCR_df$State_Rank <- Ranks - rank(HCR_df$State)    
   HCR_df <- HCR_df |>
-    dplyr::mutate(Evaluation = if_else((at_Btar >= ref_pt$mostly) & (lt_Blim <= ref_pt$max_risk), "Candidate", "Rejected")) |>
+    dplyr::mutate(Evaluation = ifelse((at_Btar >= ref_pt$mostly) & 
+                                        (lt_Blim <= ref_pt$max_risk), 
+                                      "Candidate", "Rejected")) |>
     dplyr::rowwise() |>
     dplyr::mutate(
       Rank = max(Catch_Rank, State_Rank)) |>
