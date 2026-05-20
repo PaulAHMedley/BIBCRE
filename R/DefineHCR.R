@@ -245,7 +245,11 @@ generate_HCR_range <- function(values = c(0.5, 1.0, 1.5),
 #' control on the y-axis. 
 #'
 #' A ggplot is returned with the HCR plotted as a line between
-#' the index of stock status and control.
+#' the index of stock status and control. Copes with multiple HCR and multiple 
+#' gears, but plots can get overwhelming so use with care.
+#' 
+#' The number of gears is indicated by the number of columns in the trControl 
+#' matrix column. 
 #'
 #' @inheritParams run_HCR_MSE
 #' @inheritParams graph_sim_Btar_Ftar
@@ -259,32 +263,60 @@ graph_linear_HCR <- function(HCR_df,
                              HCR_sim = NULL,
                              HCR_ID = TRUE) {
   listify <- function(x) if (is.list(x)) x else list(x)
-  HCRorder <- dplyr::select(dplyr::mutate(HCR_df, ID = ID, order=factor(dplyr::row_number())), ID, order)
+  HCRorder <- dplyr::select(dplyr::mutate(HCR_df, 
+                                          order=factor(dplyr::row_number())), 
+                            ID, order)
+  if (nrow(HCRorder) == 1) HCR_ID <- FALSE
   
   line_df <- HCR_df |>
     dplyr::ungroup() |>
     dplyr::mutate(trIndex = purrr::map(trIndex, ~ purrr::pluck(listify(.x), ctrl_index)),
                   trControl = purrr::map(trControl, ~ purrr::pluck(listify(.x), ctrl_index))) |>
     dplyr::select(ID, trIndex, trControl) |>
+    dplyr::mutate(
+        gear_split = purrr::map(trControl, function(x) {
+          if (is.null(dim(x))) {
+            tibble::tibble(gear = 1L, trControl = list(as.vector(x)))
+          } else {
+            tibble::tibble(
+              gear = factor(seq_len(ncol(x))),
+              trControl = purrr::map(seq_len(ncol(x)), ~ as.vector(x[, .x])))
+          }
+        })
+      ) |>
+    dplyr::select(-trControl) |>
+    tidyr::unnest(gear_split) 
+  
+  # HCRorder <- dplyr::select(line_df, ID, order) |>
+  #   dplyr::distinct() |>
+  #   dplyr::mutate(order=factor(dplyr::row_number())) 
+  
+  
+  line_df <- line_df |>
     tidyr::unnest(c(trIndex, trControl)) 
   
   maxIndex <- 1.2 * max(line_df$trIndex)
   
   lo_df <- line_df |>
-    dplyr::group_by(ID) |>
-    dplyr::summarise(trIndex = 0, trControl = min(trControl)) |>
+    dplyr::group_by(ID, gear) |>
+    dplyr::summarise(trIndex = 0, trControl = min(trControl), 
+                     .groups = "drop") |>
     dplyr::ungroup()
   hi_df <- line_df |>
-    dplyr::group_by(ID) |>
-    dplyr::summarise(trIndex = maxIndex, trControl = max(trControl)) |>
-    dplyr::ungroup()
+    dplyr::group_by(ID, gear) |>
+    dplyr::summarise(trIndex = maxIndex, trControl = max(trControl), 
+                     .groups = "drop")
   
   line_df <- dplyr::bind_rows(line_df, lo_df, hi_df) |>
-    dplyr::left_join(HCRorder, by="ID") |>
+    dplyr::left_join(HCRorder, by=c("ID")) |>
     dplyr::arrange(order, trIndex)
-  
+    
   gp <- ggplot2::ggplot(line_df, 
-                        ggplot2::aes(x = trIndex, y = trControl, group = order)) +
+                        ggplot2::aes(x = trIndex, y = trControl, 
+                                     group = interaction(order, 
+                                                         gear, 
+                                                         drop=TRUE), 
+                                     colour=gear)) +
     ggplot2::geom_line() +
     ggplot2::labs(y = "Control", x = "HCR Index") +
     ggplot2::coord_cartesian( y = c(0, NA))

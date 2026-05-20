@@ -382,7 +382,7 @@ fb_create_control_func <- function(refControl,
 #' @param HCR_MSE HCR_MSE function created by [create_fishblicc_MSE]
 #' @return List of MSY and MSY-proxy based reference points
 #'   mortality for relative changes to that year
-#' @noRd
+#' @export
 #'
 fb_get_refpt <- function(HCR_MSE) {
   ref_pt <- get("ref_pt", envir = environment(HCR_MSE))
@@ -1524,7 +1524,7 @@ create_fishblicc_MSE <- function(fishblicc_fit,
   ###  GENERATED FUNCTION    # ><> #
   # ><> #  # ><> #  # ><> #  # ><> #
     
-  gf <-  function(trIndex, trControl, change_limit, ma, control_type = "Effort", ctrl_pF = 1) {
+  gf <-  function(trIndex, trControl, control_type = "Effort", change_limit, ma, ctrl_pF = 1) {
     #Define the HCR: Create HCR functions
     .Random.seed <- sim_stream
     if (sim_recruit == "shared")

@@ -23,7 +23,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
       NG <- ncol(F_tar)
       pFtar <- matrix(0, nrow=nsim, ncol=PYN+1L)
       for (i in seq_len(NG))
-        pFtar <- pFtar + sweep(mF[ ,, i], 1, STATS=NG * F_tar[,i], FUN="/")
+        pFtar <- pFtar + sweep(mF[ ,, i], 1, STATS = NG * F_tar[,i], FUN="/")
       
       rsl_F <- with(HCR_sim$HCR,
                     tibble::tibble(year = rep(StartYear - 1 + seq_len(PYN+1L), each=nsim),
@@ -69,14 +69,14 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
     stop("Error: type must be a string: 'both', 'b' or 'f'.")
   
   rp_basis <- paste0(HCR_sim$ref_pt$rp_type, ": ", format(HCR_sim$ref_pt$TRP))
-  maxvalue <- pmax(2.4, quantile(df$Val, 0.99, names = FALSE))
+  maxvalue <- pmax(2.4, quantile(df$Val, 0.9999, names = FALSE))
   binwidth_x <- 1   # one time step per bin
   binwidth_y <- diff(quantile(df$Val, c(0.01, 0.99))) / 50  # example
   
   ggp <- df |>
     dplyr::filter(!is.na(Val), Val > 0, Val < maxvalue) |>
     ggplot2::ggplot(ggplot2::aes(x=year, y=Val)) +
-    ggplot2::geom_bin2d(binwidth = c(binwidth_x, binwidth_y), na.rm = TRUE) +
+    ggplot2::geom_bin2d(boundary = 0.5, binwidth = c(binwidth_x, binwidth_y), na.rm = TRUE) +
     ggplot2::scale_y_continuous(limits = c(0, maxvalue)) +
     ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN))+
     ggplot2::geom_hline(yintercept=1.0)+
@@ -123,7 +123,7 @@ graph_sim_catch <- function(HCR_sim) {
   binwidth_x <- 1   # one time step per bin
   binwidth_y <- diff(quantile(rsl_C$Catch, c(0.01, 0.99))) / 50  
   ggplot2::ggplot(rsl_C, ggplot2::aes(x=year, y=Catch)) +
-    ggplot2::geom_bin2d(binwidth = c(binwidth_x, binwidth_y)) +
+    ggplot2::geom_bin2d(boundary = 0.5, binwidth = c(binwidth_x, binwidth_y)) +
     ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN)) +
     ggplot2::scale_fill_gradient(low = "#96B1F7", high = "#030B43") +
     ggplot2::labs(x="Year", y="Catch(t)")
