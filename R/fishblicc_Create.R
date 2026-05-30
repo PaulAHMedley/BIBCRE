@@ -331,14 +331,14 @@ fb_create_control_func <- function(refControl,
                                    trControl,
                                    change_limit = NA) {
   #if (control_type != "Effort") stop("Only effort control is currently supported.")
-  trIndex <- c(0, trIndex, Inf)
-  refControl <- as.array(refControl)
   trControl <- as.array(trControl)
-  if (length(dim(trControl)) == 1L & length(dim(refControl) == 2L)) {
-    trControl <- array(rep(trControl, dim(refControl)[2]), dim = c(length(trControl), dim(refControl)[2]))
+  if (length(trIndex) == 1L) {
+    dim(trControl) <- c(1, length(trControl))
   }
+  refControl <- as.array(refControl)
   if (dim(refControl)[2] != dim(trControl)[2])
-    stop("trControl has the wrong dimensions (must be a vector or columns == ngears).")
+    stop("trControl has the wrong dimensions (must be a vector length or matrix columns == ngears).")
+  trIndex <- c(0, trIndex, Inf)
   trControl <- rbind(trControl[1, ], trControl, trControl[nrow(trControl), ])
   if (is.na(change_limit))
     return(function(indx, prev_con) {
@@ -414,7 +414,7 @@ fb_get_refpt <- function(HCR_MSE) {
 #' @param R0 R0 for BH SR
 #' @param Rb Rb for BH SR
 #' @param R00 R00 for BH SR
-#' @param SampleSize Effective sample size for length frequency data
+#' @param sample_size Effective sample size for length frequency data
 #' @param IndexFunc Function to calculate HCR index
 #' @param incrementAge logical indicating when the age is incremented with 
 #'   yr_steps
@@ -435,7 +435,7 @@ fb_calc_MSY_refpt <- function(Ngtg,
                               R0,
                               Rb,
                               R00,
-                              SampleSize,
+                              sample_size,
                               IndexFunc,
                               incrementAge
                               ) {
@@ -573,7 +573,7 @@ fb_calc_MSY_refpt <- function(Ngtg,
     SSBMSY[simi] <- sum(msy_pop1 * msy_wtmat)
     FMSY[simi, ] <- ref_F[simi, ] * res$par
     MSY[simi] <- -res$value
-    LF[, simi, ] <- round(freq * SampleSize / sum(freq))
+    LF[, simi, ] <- round(freq * sample_size / sum(freq))
   } #simi
   IMSY <- IndexFunc(LF)
   return(list(
@@ -609,7 +609,7 @@ fb_find_refpts <- function(Ngtg,
                         wt,
                         R0,
                         Rb,
-                        SampleSize,
+                        sample_size,
                         IndexFunc,
                         incrementAge,
                         recalc_F,
@@ -713,7 +713,7 @@ fb_find_refpts <- function(Ngtg,
       tar_pop1 <- tar_pop2
     } #mi
     F_tar[simi, ] <- ref_F[simi, ] * solveF$root
-    LF[, simi, ] <- round(freq * SampleSize / sum(freq))
+    LF[, simi, ] <- round(freq * sample_size / sum(freq))
   } #simi
 
   I_tar <- IndexFunc(LF)
@@ -775,7 +775,7 @@ fb_set_ref_pt_type <- function(HCR_MSE, rp_type, TRP, LRP = NULL) {
   wt <- get("wt", pos = environment(HCR_MSE))
   R0 <- get("R0", pos = environment(HCR_MSE))
   Rb  <- get("Rb", pos = environment(HCR_MSE))
-  SampleSize <- get("SampleSize", pos = environment(HCR_MSE))
+  sample_size <- get("sample_size", pos = environment(HCR_MSE))
   IndexFunc <- get("index_func", pos = environment(HCR_MSE))
   incrementAge <- get("incrementAge", pos = environment(HCR_MSE))
   
@@ -807,7 +807,7 @@ fb_set_ref_pt_type <- function(HCR_MSE, rp_type, TRP, LRP = NULL) {
     wt,
     R0,
     Rb,
-    SampleSize = SampleSize,
+    sample_size = sample_size,
     IndexFunc,
     incrementAge,
     recalc_F = TRUE,
@@ -956,40 +956,40 @@ fb_build_equil <- function(Ngtg,
 #'   variation. (required)
 #' @param catch_weight The total catch weight for the year fishblicc was fit 
 #'   (last data year). Used for scaling values so catch values align in 
-#'   magnitude. (default=1000)
+#'   magnitude. (default: 1000)
 #' @param control_type Type of control applied by HCR. Only "Effort" is 
 #'   currently supported for this model.
 #' @param index_type HCR index used (default="MeanLength")
-#' @param nsim Number of simulations to run (default=1000)
+#' @param nsim Number of simulations to run (default: 1000)
 #' @param proj_length  Projection length in years (default=50)
-#' @param StartYear Year projections start, used for plot labels only (default=1).
-#' @param AnnualRecruitment = TRUE,
+#' @param start_year Year projections start, used for plot labels only (default=1).
+#' @param annual_rec Whether recruitment is at the beginning of the year (TRUE: default)
+#'   or spread over each year step (FALSE)
 #' @param yr_steps Time steps within each year. The higher number is more 
 #'   accurate but slower simulations. Can be left to default so each step is 
-#'   equivalent to max(2, vbK=0.2) (default=0, i.e. estimate). 
-#' @param AssessmentPeriod Period within the year when the HCR is calculated for 
-#'   the following year's control (default=yr_steps).
-#' @param SampleSize The length frequency sample size. If not provided, the 
-#'   fishblicc sample size is used  (default=0, i.e. estimate). 
-#' @param SRDelay annual delay between SSB calculated subsequent recruitment 
+#'   equivalent to maximum of 2 or adjusted so each step is the equivalent of average vbK=0.2.
+#'   (default: 0, i.e. estimate). 
+#' @param assessment_period Period within the year when the HCR is calculated for 
+#'   the following year's control (default: yr_steps).
+#' @param sample_size The length frequency sample size. If not provided, the 
+#'   fishblicc sample size is used  (default: 0, i.e. estimate). 
+#' @param SR_delay annual delay between SSB calculated subsequent recruitment 
 #'   (default=1).
 #' @param h_steepness Beverton and Holt stock recruitment relationship steepness 
-#'   parameter (default=0.75).
+#'   parameter (default: 0.75).
 #' @param autocorr Autocorrelation (0-1.0) for recruitment deviates (default=0).
 #' @param recruit_cv Lognormal sigma (coefficient of variation) for recruitment 
-#'   deviates (default=0.3)
+#'   deviates (default: 0.3)
 #' @param sim_recruit recruitment deviates can be 'shared' across the simulated
 #'   parameters set or generated 'independent'-ly for each parameter set.
 #' @param ref_control A reference control (fishing mortality) used to multiply
 #'   the HCR control. This is usually the current fishing mortality, so HCR 
 #'   changes are relative to the current fishery (default = NULL i.e. current 
 #'   fishing mortality estimated in fishblicc).
-#' @param rp_type = Either "SSB0", "MSY" or current (default = "SSB0"). 
+#' @param rp_type Reference point type: either "SSB0", "MSY" or "current" (default: "SSB0"). 
 #'   See details.
-#' @param rseed Random seed if needed for repeated simulations (default = Sys.time()). 
-#'   This random seed is used for each HCR tested using the returned 
-#'   function.
-#' @return A function that will apply the HCR using the fishblicc model fit and
+#' @param rseed Random seed specified if needed for repeated simulations (default: Sys.time()). 
+#' @return A function that will apply the HCR using the fishblicc model fit with additional
 #'   specified HCR parameters: index-control inflection point vectors, the
 #'   control change limit and moving average parameter. See details.
 #' @export
@@ -997,16 +997,15 @@ fb_build_equil <- function(Ngtg,
 create_fishblicc_MSE <- function(fishblicc_fit,
                                  vbK,
                                  catch_weight = 1000,
-                                 control_type = "Effort",
                                  index_type = "MeanLength",
                                  nsim = 1000,
                                  proj_length = 50,
-                                 StartYear = 1,
-                                 AnnualRecruitment = TRUE,
+                                 start_year = 1,
+                                 annual_rec = TRUE,
                                  yr_steps = 0,
-                                 AssessmentPeriod = yr_steps,
-                                 SampleSize = 0,
-                                 SRDelay = 1,
+                                 assessment_period = yr_steps,
+                                 sample_size = 0,
+                                 SR_delay = 1,
                                  h_steepness = 0.75,
                                  autocorr = 0,
                                  recruit_cv = 0.3,
@@ -1049,10 +1048,10 @@ create_fishblicc_MSE <- function(fishblicc_fit,
   # Get time step
   if (yr_steps==0) {
     yr_steps <- ceiling(5*mean(vbK))    # steps are for K==0.2
-    AssessmentPeriod <- yr_steps
+    assessment_period <- yr_steps
   }
   # cohort / recruitment periods when age is incremented
-  if (AnnualRecruitment) {
+  if (annual_rec) {
     incrementAge <- c(logical(yr_steps-1L), TRUE)
   } else {
     incrementAge <- rep(TRUE, yr_steps)
@@ -1100,8 +1099,8 @@ create_fishblicc_MSE <- function(fishblicc_fit,
   # Length
   Ngtg <- 50L
   
-  if (SampleSize <= 0)
-    SampleSize <- sum(unlist(blicc_ld$fq)) # D$samplesize
+  if (sample_size <= 0)
+    sample_size <- sum(unlist(blicc_ld$fq)) # D$sample_size
   PYN <- proj_length
   PN <- PYN * yr_steps
   
@@ -1403,8 +1402,8 @@ create_fishblicc_MSE <- function(fishblicc_fit,
   # Determine SSB and status
   SSB[[1]] <- xSSB
   
-  if (SRDelay > 1) {
-    for (i in 2:SRDelay) {
+  if (SR_delay > 1) {
+    for (i in 2:SR_delay) {
       SSB[[i]] <- xSSB
     }
   }
@@ -1448,7 +1447,7 @@ create_fishblicc_MSE <- function(fishblicc_fit,
     R0,
     Rb,
     R00,
-    SampleSize,
+    sample_size,
     index_func,
     incrementAge
   )
@@ -1487,7 +1486,7 @@ create_fishblicc_MSE <- function(fishblicc_fit,
     wt,
     R0,
     Rb,
-    SampleSize,
+    sample_size,
     index_func,
     incrementAge,
     recalc_F = (ref_pt$rp_type == "SSB0"),
@@ -1583,11 +1582,11 @@ create_fishblicc_MSE <- function(fishblicc_fit,
           CaL[cbind(len_sim_idx[[mi]], gi)] + cl
       }
       
-      if (mi == AssessmentPeriod) {
+      if (mi == assessment_period) {
         for (gi in seq_len(NG)) {
           cs <- colSums(CaL[, , gi])
           cs[cs == 0] <- 1   # avoid divide-by-zero
-          CaL[, , gi] <- CaL[, , gi] / rep(cs, each = LN) * SampleSize
+          CaL[, , gi] <- CaL[, , gi] / rep(cs, each = LN) * sample_size
         }
         LF[[yi]] <- array(rnbinom(
           length(CaL),
@@ -1611,7 +1610,7 @@ create_fishblicc_MSE <- function(fishblicc_fit,
       if (mi == yr_steps) {
         Rec[[yi]] <- Recruitment(SSB[[yi]], lRd[, c(yi, yi + 1L)]) # nsim recruitments
         recruits <- rep(Rec[[yi]] / (sum(incrementAge)*Ngtg), each = Ngtg)
-        SSB[[yi+SRDelay]] <- tapply(pop1 * wtmat, INDEX = sim_idx, 
+        SSB[[yi+SR_delay]] <- tapply(pop1 * wtmat, INDEX = sim_idx, 
                                     FUN = "sum")
         mi <- 1L
         yi <- yi + 1L
@@ -1638,14 +1637,14 @@ create_fishblicc_MSE <- function(fishblicc_fit,
           TN = 1L,
           PN = PN,
           PYN = PYN,
-          StartYear = StartYear,
+          start_year = start_year,
           trIndex = trIndex,
           trControl = trControl,
           control_type = control_type,
           index_type = index_type,
           change_limit = change_limit,
           ma = ma,
-          SampleSize = SampleSize
+          sample_size = sample_size
         )
       )
     )

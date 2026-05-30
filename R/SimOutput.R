@@ -26,7 +26,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
         pFtar <- pFtar + sweep(mF[ ,, i], 1, STATS = NG * F_tar[,i], FUN="/")
       
       rsl_F <- with(HCR_sim$HCR,
-                    tibble::tibble(year = rep(StartYear - 1 + seq_len(PYN+1L), each=nsim),
+                    tibble::tibble(year = rep(start_year - 1 + seq_len(PYN+1L), each=nsim),
                                    Var = "F",
                                    Val = as.vector(pFtar)))
     }
@@ -34,7 +34,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
     if (type %in% c("both", "b")) {
       pBtar  <- with(HCR_sim, sweep(SSB, 1, STATS=ref_pt$B_tar, FUN="/"))
       rsl_B <- with(HCR_sim$HCR,
-                    tibble::tibble(year = rep(StartYear - 1 + seq_len(PYN+1L), each=nsim),
+                    tibble::tibble(year = rep(start_year - 1 + seq_len(PYN+1L), each=nsim),
                                    Var = "SSB",
                                    Val = as.vector(pBtar)))
     }
@@ -44,7 +44,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
     if (type %in% c("both", "f")) {
       pFtar <- with(HCR_sim, sweep(Ft+0.0001, MARGIN=1, STATS=ref_pt$F_tar, FUN="/"))
       
-      years <- with(HCR_sim, HCR$StartYear - 1 + 1:HCR$PTN)
+      years <- with(HCR_sim, HCR$start_year - 1 + 1:HCR$PTN)
       rsl_F <- with(HCR_sim, tibble::tibble(year = rep(years, each=HCR$nsim),
                                             Var = "F", 
                                             Val = as.vector(pFtar)))
@@ -52,7 +52,7 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
     
     ## Biomass
     if (type %in% c("both", "b")) {
-      years <- with(HCR_sim, HCR$StartYear - 1 + 1:(HCR$PTN+1L))
+      years <- with(HCR_sim, HCR$start_year - 1 + 1:(HCR$PTN+1L))
       pBtar <- with(HCR_sim, sweep(pB, MARGIN=1, STATS=ref_pt$B_tar, FUN="/"))
       rsl_B <- with(HCR_sim, tibble::tibble(year = rep(years, each=HCR$nsim),
                                             Var = "B",
@@ -77,8 +77,8 @@ graph_sim_Btar_Ftar <- function(HCR_sim, type = "both") {
     dplyr::filter(!is.na(Val), Val > 0, Val < maxvalue) |>
     ggplot2::ggplot(ggplot2::aes(x=year, y=Val)) +
     ggplot2::geom_bin2d(boundary = 0.5, binwidth = c(binwidth_x, binwidth_y), na.rm = TRUE) +
-    ggplot2::scale_y_continuous(limits = c(0, maxvalue)) +
-    ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN))+
+    #ggplot2::scale_y_continuous(limits = c(0, maxvalue)) +
+    ggplot2::geom_vline(xintercept=(HCR_sim$HCR$start_year + HCR_sim$HCR$TN))+
     ggplot2::geom_hline(yintercept=1.0)+
     ggplot2::geom_hline(yintercept=0.5)+
     ggplot2::scale_fill_gradient(low = "#96B1F7", high = "#030B43")
@@ -113,18 +113,18 @@ graph_sim_catch <- function(HCR_sim) {
   #catch_df <- with(HCR_sim, sweep(C, MARGIN=1, STATS=Par$Binf, FUN="*"))
   if (HCR_sim$stock_assessment == "fishblicc") {
     rsl_C <- with(HCR_sim,
-                  tibble::tibble(year = rep(HCR$StartYear - 1 + seq_len(HCR$PYN), each=HCR$nsim),
+                  tibble::tibble(year = rep(HCR$start_year - 1 + seq_len(HCR$PYN), each=HCR$nsim),
                                  Catch = as.vector(CW)))
   } else {
     rsl_C <- with(HCR_sim,
-                  tibble::tibble(year = rep(HCR$StartYear - 1 + seq_len(HCR$PTN), each=HCR$nsim),
+                  tibble::tibble(year = rep(HCR$start_year - 1 + seq_len(HCR$PTN), each=HCR$nsim),
                                  Catch = as.vector(HCR_sim$C)))
   }
   binwidth_x <- 1   # one time step per bin
   binwidth_y <- diff(quantile(rsl_C$Catch, c(0.01, 0.99))) / 50  
   ggplot2::ggplot(rsl_C, ggplot2::aes(x=year, y=Catch)) +
     ggplot2::geom_bin2d(boundary = 0.5, binwidth = c(binwidth_x, binwidth_y)) +
-    ggplot2::geom_vline(xintercept=(HCR_sim$HCR$StartYear + HCR_sim$HCR$TN)) +
+    ggplot2::geom_vline(xintercept=(HCR_sim$HCR$start_year + HCR_sim$HCR$TN)) +
     ggplot2::scale_fill_gradient(low = "#96B1F7", high = "#030B43") +
     ggplot2::labs(x="Year", y="Catch(t)")
 }

@@ -71,7 +71,7 @@ create_ptStan_MSE <- function(stan_fit,
   TN <- as.integer(stan_dat$TN)
   PN <- as.integer(proj_length)
   PTN <- PN + TN
-  StartYear <- stan_dat$YR
+  start_year <- stan_dat$YR
   
   Avg_CPUE <- NULL #Only single gear   #create_mean_CPUE(jabba_fit)
 
@@ -223,7 +223,7 @@ create_ptStan_MSE <- function(stan_fit,
                 pvIndex=pvIndex, pvControl=pvControl,
                 pjIndex=pjIndex, pjControl=pjControl,
                 HCR=list(nsim=nsim, TN=TN, PN=PN, PTN=PTN,
-                         StartYear = StartYear,
+                         start_year = start_year,
                          trIndex=trIndex, trControl=trControl,
                          control_type=control_type,
                          change_limit=change_limit, ma=ma),
