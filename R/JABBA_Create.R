@@ -52,9 +52,9 @@ create_JABBA_MSE <- function(jabba_fit,
         dplyr::pull(BB0) / BMSY
     )
   
-  StartYear <- min(Bio$year)
+  start_year <- min(Bio$year)
   # Dimensions
-  TN <- as.integer(max(Bio$year) - StartYear + 1)
+  TN <- as.integer(max(Bio$year) - start_year + 1)
   PN <- as.integer(proj_length)
   PTN <- PN + TN
   
@@ -81,7 +81,7 @@ create_JABBA_MSE <- function(jabba_fit,
       dplyr::mutate(iter = match(siter, sn))
     rm(sn, ii)
   }
-  Bio <- dplyr::mutate(Bio, tim = as.integer(year - StartYear + 1))
+  Bio <- dplyr::mutate(Bio, tim = as.integer(year - start_year + 1))
   
   pB <- matrix(0, ncol=PTN+1L, nrow=nsim)
   pB[cbind(Bio$iter, Bio$tim)] <- Bio$BB0   # extract B/B0 estimates as matrix
@@ -116,7 +116,7 @@ create_JABBA_MSE <- function(jabba_fit,
   } else {
     stop("Error: Model type not recognised.")
   }
-  dat <- list(YR = StartYear,
+  dat <- list(YR = start_year,
               TN = nrow(jabba_fit$inputseries$catch),
               TCA_ca = jabba_fit$inputseries$catch$catch,
               Catch_cv = jabba_fit$settings$catch.cv,
@@ -218,7 +218,7 @@ create_JABBA_MSE <- function(jabba_fit,
                 pvIndex=pvIndex, pvControl=pvControl,
                 pjIndex=pjIndex, pjControl=pjControl,
                 HCR=list(nsim=nsim, TN=TN, PN=PN, PTN=PTN,
-                         StartYear = StartYear,
+                         start_year = start_year,
                          trIndex=trIndex, trControl=trControl,
                          control_type=control_type,
                          change_limit=change_limit, ma=ma),
