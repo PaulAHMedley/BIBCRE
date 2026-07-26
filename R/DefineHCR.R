@@ -287,11 +287,6 @@ graph_linear_HCR <- function(HCR_df,
     dplyr::select(-trControl) |>
     tidyr::unnest(gear_split) 
   
-  # HCRorder <- dplyr::select(line_df, ID, order) |>
-  #   dplyr::distinct() |>
-  #   dplyr::mutate(order=factor(dplyr::row_number())) 
-  
-  
   line_df <- line_df |>
     tidyr::unnest(c(trIndex, trControl)) 
   
@@ -300,8 +295,8 @@ graph_linear_HCR <- function(HCR_df,
   lo_df <- line_df |>
     dplyr::group_by(ID, gear) |>
     dplyr::summarise(trIndex = 0, trControl = min(trControl), 
-                     .groups = "drop") |>
-    dplyr::ungroup()
+                     .groups = "drop")
+  
   hi_df <- line_df |>
     dplyr::group_by(ID, gear) |>
     dplyr::summarise(trIndex = maxIndex, trControl = max(trControl), 
@@ -311,12 +306,22 @@ graph_linear_HCR <- function(HCR_df,
     dplyr::left_join(HCRorder, by=c("ID")) |>
     dplyr::arrange(order, trIndex)
     
-  gp <- ggplot2::ggplot(line_df, 
-                        ggplot2::aes(x = trIndex, y = trControl, 
-                                     group = interaction(order, 
-                                                         gear, 
-                                                         drop=TRUE), 
-                                     colour=gear)) +
+  n_gear <- length(unique(line_df$gear))
+  
+  if (n_gear > 1) {
+    gp <- ggplot2::ggplot(line_df, 
+                     ggplot2::aes(x = trIndex, y = trControl, 
+                                  group = interaction(order, 
+                                                      gear, 
+                                                      drop=TRUE), 
+                                  colour=gear)) 
+  } else {
+    gp <- ggplot2::ggplot(line_df, 
+                          ggplot2::aes(x = trIndex, y = trControl, 
+                                       group = order))
+  }
+  
+  gp <- gp +
     ggplot2::geom_line() +
     ggplot2::labs(y = "Control", x = "HCR Index") +
     ggplot2::coord_cartesian( y = c(0, NA))

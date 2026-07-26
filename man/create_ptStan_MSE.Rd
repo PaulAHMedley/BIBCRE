@@ -2,13 +2,7 @@
 % Please edit documentation in R/JABBAstan_Create.R
 \name{create_ptStan_MSE}
 \alias{create_ptStan_MSE}
-\title{The functions below implement a simplified harvest control rule projection
-based on a fitted JABBA model. The method will work with some adaptation on
-any application of a Pella-Thomlinson MCMC (or related) fitted model to generate projected stock
-status over the projection period. It is configured for the Schaefer
-model and the Pella-Thomlinson, so the m parameter is used.
-There is no checking that parameters are correctly specified in this version
-Workflow}
+\title{Create a HCR MSE function using a Stan fit of the JABBA}
 \usage{
 create_ptStan_MSE(
   stan_fit,
@@ -38,18 +32,6 @@ specified HCR parameters: index-control inflection point vectors, the
 control change limit and moving average parameter.
 }
 \description{
-jabba_fits is a single fit or list of fits.
-}
-\details{
-\enumerate{
-\item Generate a jabba_fits
-\item Define the linear HCR, ma, change_limit ranges to test and generate a tibble of these values
-\item Run all HCR on JABBA fit info generating performance indicators
-\item Generate plots of HCR performance with rejected HCR in red.
-}
-
-Create a HCR MSE function using a Stan fit of the JABBA
-
 The HCR function returns simulation results from HCR parameters using a
 jabba model fit results.
 }

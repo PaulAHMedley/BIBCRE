@@ -7,33 +7,6 @@
  ##  ><> ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>
 
 
-# library("here")
-# library("dplyr")
-# library("tidyr")
-# library("ggplot2")
-# library("rstan")
-# library("flextable")
-#remotes::install_github("jabbamodel/JABBA")
-
-#' The functions below implement a simplified harvest control rule projection
-#' based on a fitted JABBA model. The method will work with some adaptation on
-#' any application of a Pella-Thomlinson MCMC (or related) fitted model to generate projected stock
-#' status over the projection period. It is configured for the Schaefer
-#' model and the Pella-Thomlinson, so the m parameter is used.
-#' There is no checking that parameters are correctly specified in this version
-
-
-#' Workflow
-#'
-#' jabba_fits is a single fit or list of fits.
-#'
-#' 1. Generate a jabba_fits
-#' 2. Define the linear HCR, ma, change_limit ranges to test and generate a tibble of these values
-#' 3. Run all HCR on JABBA fit info generating performance indicators
-#' 4. Generate plots of HCR performance with rejected HCR in red.
-#'
-
-
 #' Create a HCR MSE function using a Stan fit of the JABBA
 #'
 #' The HCR function returns simulation results from HCR parameters using a
@@ -483,10 +456,6 @@ pt_calc_MSY_refpt <- function(PP) {
                 MSY = mean(PP$MSY))  
   )
 }
-
-
-
-
 
 
 

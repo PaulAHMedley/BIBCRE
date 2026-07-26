@@ -4,17 +4,17 @@
 # Bayesian Index Based Management Strategy Evaluations
 
 This is an extension package for evaluating index-based harvest control
-rules for stock assessment state space production model JABBA ((Winker,
-Carvalho, and Kapur 2018)), a Stan version of the JABBA model and a
-length-based catch curve fishblicc (Medley 2025). The package allows
-testing of index-based linear harvest control rules against projections
-of these stock assessment models. This is a management strategy
-evaluation in that the linear index-based HCR is simpler than the stock
-assessment operating model, but clearly scenarios that can be tested are
-much more limited than software such as openMSE and FLR. The main
-advantage is that these evaluations can be undertaken very rapidly as an
-extension to the stock assessment and help incorporate uncertainty from
-the assessment into the scientific advice to management.
+rules for stock assessment state space production model JABBA ((Winker
+et al. 2018)), a Stan version of the JABBA model and a length-based
+catch curve fishblicc (Medley 2025). The package allows testing of
+index-based linear harvest control rules against projections of these
+stock assessment models. This is a management strategy evaluation in
+that the linear index-based HCR is simpler than the stock assessment
+operating model, but clearly scenarios that can be tested are much more
+limited than with software such as openMSE and FLR. The main advantage
+is that these evaluations can be undertaken very rapidly as an extension
+to the stock assessment and help incorporate uncertainty from the
+assessment into the scientific advice to management.
 
 This package is designed to identify index-based HCR that are consistent
 with management objectives based on a series of plausible fits of the
@@ -29,12 +29,12 @@ proxy of fishing mortality. Controls such as closed areas or seasons
 would need to be translated into effort or catch limits or changes in
 selectivity to be applied in the simulations.
 
-***WARNING: This software has not undergone much testing and so may well
-have bugs. It seems to work…***
+***WARNING: This software has not undergone much testing yet and so may
+well have bugs. It seems to work…***
 
 ## Installation
 
-You can install the current version of BIBMSE:
+You can install the current version of BIBCRE:
 
 ``` r
 if (! require("remotes")) install.packages("remotes")
@@ -109,7 +109,7 @@ The harvest control rule can be plotted.
 with(ref_pt, graph_linear_HCR(tibble::tibble(ID=1, trIndex = list(c(IMSY*0.25, IMSY)), trControl=list(c(0, FMSY)), change_limit=NA, ma=0.5)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 An individual HCR simulation projection can be plotted.
 
@@ -117,7 +117,7 @@ An individual HCR simulation projection can be plotted.
 graph_sim_Btar_Ftar(HCR_sim, type="both")
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 And the proportion of the simulation spent in each status range based on
 the reference points.
@@ -126,7 +126,7 @@ the reference points.
 table_sim_status(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="50%" height="50%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="50%" height="50%" />
 
 The HCR decision-making can be evaluated to some extent by checking
 whether its responses are coordinated to changes in stock status. The
@@ -141,7 +141,7 @@ should be performing.
 table_sim_decision(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" alt="" width="50%" height="50%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="50%" height="50%" />
 
 Various performance indicators are recorded consisting of measures of
 catch (average, range and lower percentile) and stock status (measures
@@ -158,7 +158,7 @@ necessarily clarify comparisons between HCR.
 table_sim_performance(HCR_sim)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 To test a range of HCRs, they can be defined in a data frame (tibble),
 where each row defines an HCR to be tested. To do this, we define
@@ -201,7 +201,7 @@ TestHCR_df <- define_HCR_test_range(ref_pt$IMSY, ref_pt$FMSY,
 graph_linear_HCR(TestHCR_df)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 In addition, we define three alternate limits of the control change from
 year to year, and three alternate moving average smoothing parameters.
@@ -238,7 +238,7 @@ criteria.
 graph_HCR_status(HCR_res, HCR)
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 The other measures of performance are related to catches. The average
 catch and annual changes in catch are usually of interest. This is
@@ -253,7 +253,7 @@ increasing the catch more relative to the increase in catch range.
 graph_HCR_catches(HCR_res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 In reviewing the HCR, it is worth evaluating its decision-making to see
 how it might be improved. The HCR can make two mistakes: not responding
@@ -266,7 +266,7 @@ worse, but the fewer mistakes the better the HCR should be performing.
 graph_HCR_decision(HCR_res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 The lowest annual catch represented by the lower 10 percentile can be
 checked in relation to the change limit. Annual change limits are often
@@ -281,7 +281,7 @@ CandidateHCR_df <- HCR_res |>
 graph_HCR_status_catches(CandidateHCR_df)
 ```
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 HCRs can be subset and plotted. For example, the top 5 HCRs with respect
 to status performance (proportion of the time in the target minus the
@@ -295,7 +295,7 @@ CandidateHCR_df |>
   graph_linear_HCR(HCR_ID=TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
 
 Or the twelve highest ranking linear HCRs can be plotted. Rank is based
 on performance in relation to stock status and catch.
@@ -307,7 +307,7 @@ BestHCR <- CandidateHCR_df |>
 graph_linear_HCR(BestHCR, HCR_ID=TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
 
 The performance indicators for these “best” HCR can be presented in a
 table.
@@ -316,18 +316,17 @@ table.
 table_HCR_performance(BestHCR)
 ```
 
-<img src="man/figures/README-unnamed-chunk-16-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
 
 ## Reference
 
-<div id="refs" class="references csl-bib-body hanging-indent"
-entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 
 <div id="ref-medley2025" class="csl-entry">
 
 Medley, Paul A H. 2025. “A New Bayesian Catch Curve Stock Assessment
-Model for the Analysis of Length Data from Multi-Gear Fisheries.” Edited
-by Jan Jaap Poos. *ICES Journal of Marine Science* 82 (12): fsaf224.
+Model for the Analysis of Length Data from Multi-Gear Fisheries.” *ICES
+Journal of Marine Science* 82 (12): fsaf224.
 <https://doi.org/10.1093/icesjms/fsaf224>.
 
 </div>

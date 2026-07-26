@@ -834,7 +834,7 @@ fb_set_ref_pt_type <- function(HCR_MSE, rp_type, TRP, LRP = NULL) {
 #'   for each simulation or shared across simulations
 #' @export
 #'
-set_sim_recruit <- function(HCR_MSE, sim_recruit) {
+fb_set_sim_recruit <- function(HCR_MSE, sim_recruit) {
   if (!(sim_recruit %in% c("shared", "independent")))
     stop("Error: sim_recruit can only be 'shared' or 'independent'.")
   assign("sim_recruit", sim_recruit, pos = environment(HCR_MSE))
@@ -924,9 +924,10 @@ fb_build_equil <- function(Ngtg,
 #' 
 #' The stock recruitment relationship is the Beverton and Holt function, with 
 #' steepness set by the user. A default precautionary steepness = 0.75 is 
-#' applied This is raised if the population dynamics do not support this 
+#' applied. This is raised if the population dynamics do not support this 
 #' steepness level and a warning is given. This can occur when the estimated 
-#' SPR is very low. The unexploited recruitment is estimated as scaling factor 
+#' SPR is very low and an equiibrium state cannot be found with the proposed 
+#' steepness. The unexploited recruitment is estimated as scaling factor 
 #' consistent with the catch (catch_weight).
 #' 
 #' Reference points are estimated. The default reference point is 40% 
@@ -944,7 +945,7 @@ fb_build_equil <- function(Ngtg,
 #'   - trControl: a single vector or list of vectors, one for each gear
 #'   - change_limit: an annual proportional change limit on the control, if any  
 #'   - ma: a moving average parameter for the index (default=0.5)
-#'   - control_type: ignored (default="Effort")
+#'   - control_type: ignored (default="Effort" for the fishblicc extension)
 #'   - ctrl_pF: Proportion of the fishing mortality affected by the control. So 
 #'     (1-ctrl_pF)*F is fixed and unaffected. This could represent uncontrolled
 #'     subsistence fishing for example (default=1). 
@@ -966,7 +967,7 @@ fb_build_equil <- function(Ngtg,
 #' @param annual_rec Whether recruitment is at the beginning of the year (TRUE: default)
 #'   or spread over each year step (FALSE)
 #' @param yr_steps Time steps within each year. The higher number is more 
-#'   accurate but slower simulations. Can be left to default so each step is 
+#'   accurate but simulations will be slower. Can be left to default so each step is 
 #'   equivalent to maximum of 2 or adjusted so each step is the equivalent of average vbK=0.2.
 #'   (default: 0, i.e. estimate). 
 #' @param assessment_period Period within the year when the HCR is calculated for 

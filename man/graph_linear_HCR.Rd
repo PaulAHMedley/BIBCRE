@@ -22,5 +22,10 @@ A ggplot object plotting the HCR's
 }
 \description{
 A ggplot is returned with the HCR plotted as a line between
-the index of stock status and control.
+the index of stock status and control. Copes with multiple HCR and multiple
+gears, but plots can get overwhelming so use with care.
+}
+\details{
+The number of gears is indicated by the number of columns in the trControl
+matrix column.
 }

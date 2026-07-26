@@ -8,16 +8,15 @@ create_fishblicc_MSE(
   fishblicc_fit,
   vbK,
   catch_weight = 1000,
-  control_type = "Effort",
   index_type = "MeanLength",
   nsim = 1000,
   proj_length = 50,
-  StartYear = 1,
-  AnnualRecruitment = TRUE,
+  start_year = 1,
+  annual_rec = TRUE,
   yr_steps = 0,
-  AssessmentPeriod = yr_steps,
-  SampleSize = 0,
-  SRDelay = 1,
+  assessment_period = yr_steps,
+  sample_size = 0,
+  SR_delay = 1,
   h_steepness = 0.75,
   autocorr = 0,
   recruit_cv = 0.3,
@@ -37,41 +36,40 @@ variation. (required)}
 
 \item{catch_weight}{The total catch weight for the year fishblicc was fit
 (last data year). Used for scaling values so catch values align in
-magnitude. (default=1000)}
-
-\item{control_type}{Type of control applied by HCR. Only "Effort" is
-currently supported for this model.}
+magnitude. (default: 1000)}
 
 \item{index_type}{HCR index used (default="MeanLength")}
 
-\item{nsim}{Number of simulations to run (default=1000)}
+\item{nsim}{Number of simulations to run (default: 1000)}
 
 \item{proj_length}{Projection length in years (default=50)}
 
-\item{StartYear}{Year projections start, used for plot labels only (default=1).}
+\item{start_year}{Year projections start, used for plot labels only (default=1).}
 
-\item{AnnualRecruitment}{= TRUE,}
+\item{annual_rec}{Whether recruitment is at the beginning of the year (TRUE: default)
+or spread over each year step (FALSE)}
 
 \item{yr_steps}{Time steps within each year. The higher number is more
-accurate but slower simulations. Can be left to default so each step is
-equivalent to max(2, vbK=0.2) (default=0, i.e. estimate).}
+accurate but simulations will be slower. Can be left to default so each step is
+equivalent to maximum of 2 or adjusted so each step is the equivalent of average vbK=0.2.
+(default: 0, i.e. estimate).}
 
-\item{AssessmentPeriod}{Period within the year when the HCR is calculated for
-the following year's control (default=yr_steps).}
+\item{assessment_period}{Period within the year when the HCR is calculated for
+the following year's control (default: yr_steps).}
 
-\item{SampleSize}{The length frequency sample size. If not provided, the
-fishblicc sample size is used  (default=0, i.e. estimate).}
+\item{sample_size}{The length frequency sample size. If not provided, the
+fishblicc sample size is used  (default: 0, i.e. estimate).}
 
-\item{SRDelay}{annual delay between SSB calculated subsequent recruitment
+\item{SR_delay}{annual delay between SSB calculated subsequent recruitment
 (default=1).}
 
 \item{h_steepness}{Beverton and Holt stock recruitment relationship steepness
-parameter (default=0.75).}
+parameter (default: 0.75).}
 
 \item{autocorr}{Autocorrelation (0-1.0) for recruitment deviates (default=0).}
 
 \item{recruit_cv}{Lognormal sigma (coefficient of variation) for recruitment
-deviates (default=0.3)}
+deviates (default: 0.3)}
 
 \item{sim_recruit}{recruitment deviates can be 'shared' across the simulated
 parameters set or generated 'independent'-ly for each parameter set.}
@@ -81,15 +79,16 @@ the HCR control. This is usually the current fishing mortality, so HCR
 changes are relative to the current fishery (default = NULL i.e. current
 fishing mortality estimated in fishblicc).}
 
-\item{rp_type}{= Either "SSB0", "MSY" or current (default = "SSB0").
+\item{rp_type}{Reference point type: either "SSB0", "MSY" or "current" (default: "SSB0").
 See details.}
 
-\item{rseed}{Random seed if needed for repeated simulations (default = Sys.time()).
-This random seed is used for each HCR tested using the returned
-function.}
+\item{rseed}{Random seed specified if needed for repeated simulations (default: Sys.time()).}
+
+\item{control_type}{Type of control applied by HCR. Only "Effort" is
+currently supported for this model.}
 }
 \value{
-A function that will apply the HCR using the fishblicc model fit and
+A function that will apply the HCR using the fishblicc model fit with additional
 specified HCR parameters: index-control inflection point vectors, the
 control change limit and moving average parameter. See details.
 }
@@ -115,9 +114,10 @@ apart from K are taken from the fishblicc fit.
 
 The stock recruitment relationship is the Beverton and Holt function, with
 steepness set by the user. A default precautionary steepness = 0.75 is
-applied This is raised if the population dynamics do not support this
+applied. This is raised if the population dynamics do not support this
 steepness level and a warning is given. This can occur when the estimated
-SPR is very low. The unexploited recruitment is estimated as scaling factor
+SPR is very low and an equiibrium state cannot be found with the proposed
+steepness. The unexploited recruitment is estimated as scaling factor
 consistent with the catch (catch_weight).
 
 Reference points are estimated. The default reference point is 40\%
@@ -136,7 +136,7 @@ The HCR function that is produced takes six parameters.
 \item trControl: a single vector or list of vectors, one for each gear
 \item change_limit: an annual proportional change limit on the control, if any
 \item ma: a moving average parameter for the index (default=0.5)
-\item control_type: ignored (default="Effort")
+\item control_type: ignored (default="Effort" for the fishblicc extension)
 \item ctrl_pF: Proportion of the fishing mortality affected by the control. So
 (1-ctrl_pF)*F is fixed and unaffected. This could represent uncontrolled
 subsistence fishing for example (default=1).

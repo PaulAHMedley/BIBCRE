@@ -17,17 +17,17 @@ knitr::opts_chunk$set(
 
 # Bayesian Index Based Management Strategy Evaluations
 
-This is an extension package for evaluating index-based harvest control rules for stock assessment state space production model JABBA ([@winker2018]), a Stan version of the JABBA model and a length-based catch curve fishblicc [@medley2025]. The package allows testing of index-based linear harvest control rules against projections of these stock assessment models. This is a management strategy evaluation in that the linear index-based HCR is simpler than the stock assessment operating model, but clearly scenarios that can be tested are much more limited than software such as openMSE and FLR. The main advantage is that these evaluations can be undertaken very rapidly as an extension to the stock assessment and help incorporate uncertainty from the assessment into the scientific advice to management.
+This is an extension package for evaluating index-based harvest control rules for stock assessment state space production model JABBA ([@winker2018]), a Stan version of the JABBA model and a length-based catch curve fishblicc [@medley2025]. The package allows testing of index-based linear harvest control rules against projections of these stock assessment models. This is a management strategy evaluation in that the linear index-based HCR is simpler than the stock assessment operating model, but clearly scenarios that can be tested are much more limited than with software such as openMSE and FLR. The main advantage is that these evaluations can be undertaken very rapidly as an extension to the stock assessment and help incorporate uncertainty from the assessment into the scientific advice to management.
 
 This package is designed to identify index-based HCR that are consistent with management objectives based on a series of plausible fits of the stock assessment model.
 
 Index-based means it treats the calculated index as an index of abundance or mortality - the same assumption as in the stock assessment models. For the production models, the CPUE is used to calculate an index which then leads to adjustments in the control, either effort or catch limits. For the length-based catch curve, mean length is used as a proxy of fishing mortality. Controls such as closed areas or seasons would need to be translated into effort or catch limits or changes in selectivity to be applied in the simulations.
 
-***WARNING: This software has not undergone much testing and so may well have bugs. It seems to work...***
+***WARNING: This software has not undergone much testing yet and so may well have bugs. It seems to work...***
 
 ## Installation
 
-You can install the current version of BIBMSE:
+You can install the current version of BIBCRE:
 
 ``` r
 if (! require("remotes")) install.packages("remotes")
