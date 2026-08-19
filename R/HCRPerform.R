@@ -21,14 +21,22 @@
 #'
 #' @param HCR_sim Fishery HCR simulation result list from the MSE
 #'   (see [create_fishblicc_MSE], [create_JABBA_MSE], [create_ptStan_MSE]).
+#' @param retro Whether to apply the performance measures to the fitted 
+#'   model results. This is not affected by the harvest control rule which was 
+#'   not applied. This is only relevant for the JABBA models, and is ignore for
+#'   fishblicc.
 #' @return Tibble row of performance measures
 #' @export
 #'
-HCR_performance <- function(HCR_sim) {
+HCR_performance <- function(HCR_sim, retro = FALSE) {
   if (HCR_sim$stock_assessment == "fishblicc")
     PjN <- HCR_sim$HCR$PYN + 1L
-  else
-    PjN <- with(HCR_sim$HCR, PN + 1L)
+  else {
+    if (retro) {
+      PjN <- HCR_sim$HCR$TN
+    } else {
+      PjN <- with(HCR_sim$HCR, PN + 1L) }
+  }
   B_tar <- with(HCR_sim, rep(ref_pt$B_tar, PjN))
   B_lim <- with(HCR_sim, rep(ref_pt$B_lim, PjN)) # 0.5
   MaxRisk <- HCR_sim$ref_pt$max_risk
@@ -42,9 +50,15 @@ HCR_performance <- function(HCR_sim) {
     Index <- as.vector(HCR_sim$pjIndex)
     Catch <- HCR_sim$CW
   } else {  
-    Bt <- with(HCR_sim, as.vector(pB[ , (HCR$TN+1L):(HCR$PTN+1L)]))
-    Index <- as.vector(HCR_sim$pjIndex[ , -1L])
-    Catch <- with(HCR_sim, C[ , (HCR$TN+1L):HCR$PTN]) #with(HCR_sim, sweep(C[ , (HCR$TN+1):HCR$PTN], MARGIN=1, STATS=Par$Binf, FUN="*"))
+    if (retro) {
+      Bt <- with(HCR_sim, as.vector(pB[ , 1L:(HCR$TN)]))
+      Index <- as.vector(HCR_sim$pvIndex)
+      Catch <- HCR_sim$dat$TCA_ca
+    } else {
+      Bt <- with(HCR_sim, as.vector(pB[ , (HCR$TN+1L):(HCR$PTN+1L)]))
+      Index <- as.vector(HCR_sim$pjIndex[ , -1L])
+      Catch <- with(HCR_sim, C[ , (HCR$TN+1L):HCR$PTN]) #with(HCR_sim, sweep(C[ , (HCR$TN+1):HCR$PTN], MARGIN=1, STATS=Par$Binf, FUN="*"))
+    }
   }
   
   Catch_Avg <- mean(Catch)
@@ -56,6 +70,7 @@ HCR_performance <- function(HCR_sim) {
   # Management response when not necessary
   lo_trigger <- min(unlist(HCR_sim$HCR$trIndex))
   hi_trigger <- max(unlist(HCR_sim$HCR$trIndex))
+  
   Err_Type1 <- 0.5*mean(((Bt > B_lim) & (Index < lo_trigger)) +
                           ((Bt > B_tar_lower) & (Index < hi_trigger)))
   # No management response when it is necessary

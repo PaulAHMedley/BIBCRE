@@ -1,7 +1,7 @@
  ##  ><> ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>
  ##  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>
  ##  ><> ##  ><>
- ##  ><> ##    ><>     JABBAStan HCR Functions v0.96
+ ##  ><> ##    ><>     JABBAStan HCR Functions
  ##  ><> ##  ><>
  ##  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>
  ##  ><> ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>  ><>
@@ -10,13 +10,16 @@
 #' Create a HCR MSE function using a Stan fit of the JABBA
 #'
 #' The HCR function returns simulation results from HCR parameters using a
-#' jabba model fit results.
+#' JABBA model fit results from JABBAstan.
 #'
 #' @param stan_fit A stanfit object
 #' @param stan_dat Data list used to fit the Stan model
 #' @param control_type Type of control applied by HCR either "Effort" or "Catch"
-#' @param proj_length   Projection length in years
+#' @param proj_length   Projection length in years. If set to zero this will apply
+#'   the HCR to the historical fit using estimated errors.
 #' @param nsim Number of simulations to run
+#' @param implement_cv Coefficient of variation for lognormal implementation 
+#'   error applied to fishing mortality. Not used if proj_length==0.
 #' @param ref_pt Specifies risk based reference points in a list. Otherwise
 #'   defaults apply.
 #' @return A function that will apply the HCR using the stan model fit and
@@ -28,6 +31,7 @@ create_ptStan_MSE <- function(stan_fit,
                               stan_dat,
                               proj_length = 50,
                               nsim = 1000,
+                              implement_cv = 0.1,
                               ref_pt = standard_risk_ref_pt()) {
   # candidate HCR definitions: not used in this function, but recorded for later evaluation
   # can be obtained from the function using "get"
@@ -42,8 +46,13 @@ create_ptStan_MSE <- function(stan_fit,
   
   # Dimensions
   TN <- as.integer(stan_dat$TN)
-  PN <- as.integer(proj_length)
+  if (proj_length > 0) {
+    PN <- as.integer(proj_length)
+  } else {  
+    PN <- TN
+  }
   PTN <- PN + TN
+  
   start_year <- stan_dat$YR
   
   Avg_CPUE <- NULL #Only single gear   #create_mean_CPUE(jabba_fit)
@@ -67,8 +76,11 @@ create_ptStan_MSE <- function(stan_fit,
 
     rm(sn, ii)
   }
-  obserr <- dplyr::pull(Par, ce_cv)
-
+  ce_cv <- dplyr::pull(Par, ce_cv)
+  lq <- dplyr::pull(Par, lq)
+  r <- dplyr::pull(Par, r)
+  lsigma <- dplyr::pull(Par, Nus)
+  
   #Calculate past biomass etc.
   # Bio <- jabba_fit$kbtrj |>
   #   dplyr::select(year, iter, harvest:BB0)
@@ -91,16 +103,22 @@ create_ptStan_MSE <- function(stan_fit,
   pvCPUE <- array(0, dim=c(TN, 1))
   pvCPUE[stan_dat$TCE_t,] <- with(stan_dat, TCE_ca / TCE_ef)
 
-  # Model parameters
-  r <- dplyr::pull(Par, r)
-  lsigma <- dplyr::pull(Par, Nus)
+  #Process error
+  if (proj_length == 0) {# Retrospective
+    Bdev <- with(Par, exp(sweep(sNut, Nus, MARGIN=1, "*"))) |>
+      cbind(rlnorm(nsim, 0, lsigma))
+    implement_error <- (Ft[, 1:TN] + Par$dF) / Ft[, 1:TN]
+  } else { # Projection
+    Bdev <- matrix(rlnorm(nsim*(PN+1L), 0, lsigma), nrow = nsim, ncol = PN+1L)
+    implement_error <-  matrix(exp(rlnorm((PN+1L)*nsim, 0, implement_cv)), ncol=PN+1L)
+  }
   # The following will need adaptation if more than one gear
   q <- exp(dplyr::pull(Par, lq))
-  m_1 <- pull(Par, m) - 1
+  m_1 <- dplyr::pull(Par, m) - 1
   r_m_1 <- r/m_1
   Binf <- dplyr::pull(Par, Binf)
-  prod_fun <- function(pBti) {
-    return(pBti * (1 + r_m_1 * (1 - pBti^m_1)) * rlnorm(nsim, 0, lsigma)) }
+  prod_fun <- function(pBti, Bdev_t) {
+    return(pBti * (1 + r_m_1 * (1 - pBti^m_1)) * Bdev_t) }
 
   B_trial <- apply(sweep(pB[, 1:TN], MARGIN=1, STATS=as.array(Binf), FUN = "*"), 1, min)
   dat <- stan_dat
@@ -112,7 +130,7 @@ create_ptStan_MSE <- function(stan_fit,
   Par <- dplyr::select(Par, -BMSY)
   
   # Tidy up
-  rm(stan_fit, proj_length, stan_dat, i)
+  rm(stan_fit, stan_dat, i)
 
   # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #
   ###  GENERATED FUNCTION    # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #
@@ -131,14 +149,14 @@ create_ptStan_MSE <- function(stan_fit,
     # if (!is.list(trIndex)) trIndex <- list(trIndex)
     # if (!is.list(trControl)) trIndex <- list(trControl)
 
-    UpdateIndex <- pt_create_HCR_index(ma, func=Avg_CPUE, obserr)
+    UpdateIndex <- pt_create_HCR_index(ma, func=Avg_CPUE)
     CalcControl <- pt_create_linear_control(trIndex, trControl,
                                             change_limit=change_limit)
 
-    if (NCtrl == 1L)
+    if (NCtrl == 1L) {
       C_trial <- max(trControl)
-    else
-      C_trial <- max(trControl[[1L]])
+    } else {
+      C_trial <- max(trControl[[1L]]) }
 
     if (control_type[1L] == "Catch") {
       F_trial <- -log(1 - C_trial/ B_trial)
@@ -161,11 +179,20 @@ create_ptStan_MSE <- function(stan_fit,
     pjControl <- array(0, dim=c(nsim, NCtrl, (PN+2L)))
     pjIndex[, 1L] <- pvIndex[TN]
     pjControl[, , 1L] <- as.array(rep(as.vector(pvControl[ , TN]), each=nsim), dim=c(nsim, NCtrl))  # sim, ctrl, year
+    
+    if (proj_length == 0) { # Retrospective
+      start_ti <- TN + 1L
+      proj_times <- seq(PN)
+      pB[, start_ti] <- Par$P0 # restart 
+    } else {
+      start_ti <- TN
+      proj_times <- seq(PN+1L)
+    }
+    
+    for (pi in proj_times) {
+      ti <- start_ti + pi - 1L
 
-    for (pi in seq(PN+1L)) {
-      ti <- TN + pi - 1L
-
-      pB1 <- prod_fun(pB[, ti])
+      pB1 <- prod_fun(pB[, ti], Bdev[ , pi])
       pB1[pB1 < minstatus] <- minstatus
 
       # Apply Control
@@ -173,19 +200,19 @@ create_ptStan_MSE <- function(stan_fit,
       for (cj in seq(NCtrl)) {
         if (control_type[cj]=="Catch") {
           exp_F <- pmax(minstatus, 1 - pjControl[ , cj, pi] / (Binf*pB1))
-          F_limit <- Ft1*(1 - ctrl_pF[cj]) - log(exp_F)
+          F_limit <- Ft1 * (1 - ctrl_pF[cj]) - log(exp_F)
         } else if (control_type[cj]=="Effort") {
-          F_limit <- Ft1*(1 - ctrl_pF[cj]) + q * pjControl[ , cj, pi]
+          F_limit <- Ft1 * (1 - ctrl_pF[cj]) + q * pjControl[ , cj, pi]
         } else { # Opportunities
           F_limit <- Ft1 * (1 - ctrl_pF[cj] + ctrl_pF[cj] * pjControl[ , cj, pi])
         }
-        Ft1 <- pmin(Ft1, F_limit)
+        Ft1 <- pmin(Ft1, F_limit) 
       }
 
-      Ft[ , ti] <- Ft1
+      Ft[ , ti] <- Ft1 * implement_error[ , pi]
       pB[, ti+1L] <- pB1 * exp(- Ft[, ti])
       C[ , ti] <- (pB1 - pB[, ti+1L]) * Binf
-      CPUE <- q * C[ , ti] / Ft[ , ti]
+      CPUE <- exp(rnorm(nsim, 0, ce_cv)+lq) * C[ , ti] / Ft[ , ti]
 
       pjIndex[, pi+1L] <- UpdateIndex(pjIndex[, pi], CPUE)
       pjControl[,, pi+1L] <- CalcControl(pjIndex[, pi+1L], pjControl[, , pi])
@@ -193,6 +220,7 @@ create_ptStan_MSE <- function(stan_fit,
 
     return(list(stock_assessment = stock_assessment,
                 pB=pB, C=C, Ft=Ft, Par=Par,
+                implement_error = implement_error,
                 pvIndex=pvIndex, pvControl=pvControl,
                 pjIndex=pjIndex, pjControl=pjControl,
                 HCR=list(nsim=nsim, TN=TN, PN=PN, PTN=PTN,
@@ -206,8 +234,6 @@ create_ptStan_MSE <- function(stan_fit,
 }
 
 
-
-
 #' Create the empirical abundance index update function.
 #'
 #' The index function created calculates a moving average from one or more
@@ -215,17 +241,16 @@ create_ptStan_MSE <- function(stan_fit,
 #'
 #' @param  ma  Moving average parameter for index time series
 #' @param  func Function used to combine multiple CPUE series into a single index
-#' @param  se  Observation standard error to be added in to the index
 #' @return A function taking a single CPUE list as a parameter that can be used
 #'   to calculate the HCR index
 #' @export
 #'
-pt_create_HCR_index <- function(ma, func=NULL, se) {
+pt_create_HCR_index <- function(ma, func=NULL) {
   default_factor <- 1.05  # default 5% increase to allow recovery
   if (is.null(func)) # Single gears
     return(
       function(indx_1, CPUE) {
-        indx_0 <- CPUE*rlnorm(length(CPUE), 0, se)
+        indx_0 <- CPUE
         invalid <- is.na(indx_0) | (indx_0 <= 0)
         indx_0[invalid] <- indx_1[invalid]*default_factor
         return(ma*indx_0 + (1-ma)*indx_1)
@@ -235,11 +260,9 @@ pt_create_HCR_index <- function(ma, func=NULL, se) {
       function(indx_1, CPUE) {
         # CPUE can be a matrix
         if (is.matrix(CPUE)) {
-          err <- matrix(rlnorm(length(CPUE), 0, se), ncol=length(se), byrow=T)
-          indx_0 <- apply(CPUE*err, MARGIN=1, func)
+          indx_0 <- apply(CPUE, MARGIN=1, func)
         } else {
-          err <- rlnorm(length(CPUE), 0, se)
-          indx_0 <- func(array(CPUE*err, dim=c(1, length(CPUE))))  # Apply func vector
+          indx_0 <- func(array(CPUE, dim=c(1, length(CPUE))))  # Apply func vector
         }
         invalid <- is.na(indx_0) | (indx_0 <= 0)
         indx_0[invalid] <- indx_1[invalid]*default_factor
@@ -456,6 +479,3 @@ pt_calc_MSY_refpt <- function(PP) {
                 MSY = mean(PP$MSY))  
   )
 }
-
-
-

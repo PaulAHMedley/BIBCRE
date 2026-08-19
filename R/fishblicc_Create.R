@@ -91,14 +91,15 @@ meanLength_func <- function(blicc_ld, gears2use = "All") {
   xLMP <- with(blicc_ld, rep(LMP, each = NG))
   if (gears2use == "All")
     gears2use <- 1L:blicc_ld$NG
-  return(function(lenfq) {
-    lenfq <- lenfq[, , gears2use, drop = FALSE]
-    dm <- dim(lenfq)
-    ml <- vapply(seq_len(dm[2]), function(i) {
-      sum(as.vector(lenfq[, i, ]) * xLMP) / sum(lenfq[, i, ])
-    }, numeric(1))
-    return(ml)
-  })
+  return(
+    function(lenfq) {
+      lenfq <- lenfq[, , gears2use, drop = FALSE]
+      dm <- dim(lenfq)
+      ml <- vapply(seq_len(dm[2]), function(i) {
+              sum(as.vector(lenfq[, i, ]) * xLMP) / sum(lenfq[, i, ])
+              }, numeric(1))
+      return(ml)
+    })
 }
 
 
