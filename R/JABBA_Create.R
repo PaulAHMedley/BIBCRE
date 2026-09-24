@@ -177,6 +177,17 @@ create_JABBA_MSE <- function(jabba_fit,
       pvIndex[yi] <- UpdateIndex(pvIndex[yi-1L], pvCPUE[yi,])
       pvControl[ , yi] <- drop(CalcControl(pvIndex[yi], pvControl[ , yi-1L]))
     }
+
+    if (proj_length == 0) { # Retrospective
+      start_ti <- TN + 1L
+      proj_times <- seq_len(PN)
+      pB[, start_ti] <- Par$P0 # restart 
+      CPUE <- matrix(0.0, nrow=nsim, ncol=PN)
+    } else {
+      start_ti <- TN
+      proj_times <- seq_len(PN+1L)
+      CPUE <- matrix(0.0, nrow=nsim, ncol=PN+1L)
+    }
     
     ###  PROJECTION   # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #  # ><> #
     pjIndex <- matrix(0, nrow=nsim, ncol=(PN+2L))
@@ -184,8 +195,8 @@ create_JABBA_MSE <- function(jabba_fit,
     pjIndex[, 1L] <- pvIndex[TN]
     pjControl[, , 1L] <- as.array(rep(as.vector(pvControl[ , TN]), each=nsim), dim=c(nsim, NCtrl))  # sim, ctrl, year
     
-    for (pi in seq(PN+1L)) {
-      ti <- TN + pi - 1L
+    for (pi in proj_times) {
+      ti <- start_ti + pi - 1L
       
       pB1 <- prod_fun(pB[, ti])
       pB1[pB1 < minstatus] <- minstatus
@@ -207,14 +218,14 @@ create_JABBA_MSE <- function(jabba_fit,
       Ft[ , ti] <- Ft1
       pB[, ti+1L] <- pB1 * exp(- Ft[, ti])
       C[ , ti] <- (pB1 - pB[, ti+1L]) * Binf
-      CPUE <- q * C[ , ti] / Ft[ , ti]
-      
+      CPUE[ , pi] <- exp(rnorm(nsim, 0, ce_cv)) * q * C[ , ti] / Ft[ , ti]
+
       pjIndex[, pi+1L] <- UpdateIndex(pjIndex[, pi], CPUE)
       pjControl[,, pi+1L] <- CalcControl(pjIndex[, pi+1L], pjControl[, , pi])
     } #ti
     
     return(list(stock_assessment = stock_assessment,
-                pB=pB, C=C, Ft=Ft, Par=Par,
+                pB=pB, C=C, Ft=Ft, CPUE = CPUE, Par=Par,
                 pvIndex=pvIndex, pvControl=pvControl,
                 pjIndex=pjIndex, pjControl=pjControl,
                 HCR=list(nsim=nsim, TN=TN, PN=PN, PTN=PTN,

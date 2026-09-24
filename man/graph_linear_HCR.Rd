@@ -5,14 +5,26 @@
 \title{Plot harvest control rules with the stock status index on the x-axis and
 control on the y-axis.}
 \usage{
-graph_linear_HCR(HCR_df, ctrl_index = 1L, HCR_sim = NULL, HCR_ID = TRUE)
+graph_linear_HCR(
+  HCR_df,
+  ctrl_index = 1L,
+  HCR_sim = NULL,
+  highlight = 0,
+  HCR_ID = TRUE
+)
 }
 \arguments{
 \item{HCR_df}{A data frame produced by eg \link{define_HCR_test_range} with
 HCR parameters}
 
+\item{ctrl_index}{Set the control to plot. Only relevant if more than one
+control is applied}
+
 \item{HCR_sim}{Fishery HCR simulation result list from the MSE
 (see \link{create_fishblicc_MSE}, \link{create_JABBA_MSE}, \link{create_ptStan_MSE}).}
+
+\item{highlight}{A vector of HCR ID to highlight in the plot in red. The
+default 0 means it is not used.}
 
 \item{HCR_ID}{Logical - whether to include the ID as a factor in the plot.
 Will only work for 12 or fewer HCR.}

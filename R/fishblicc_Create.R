@@ -1016,6 +1016,10 @@ create_fishblicc_MSE <- function(fishblicc_fit,
                                  rp_type = "SSB0",
                                  rseed = Sys.time()) {
   stock_assessment <- "fishblicc" 
+  
+  if (proj_length <= 0) {
+    stop("Retrospective HCR evaluation not available for fishblicc simulation.")
+  }
   cat("Extracting data.\n")
   # Check fishbicc_fit is a reference point fit list and recruitment is a function or NULL
   RNGkind("L'Ecuyer-CMRG")
@@ -1548,7 +1552,7 @@ blicc_ld <<- blicc_ld
     mi <- 1L
     CW <- LF <- list()
     CaL <- array(0, dim = c(LN, nsim, NG))
-    CW[[1]] <- double(nsim)
+    CW[[1]] <- array(0, dim=c(nsim, NG))
     for (ti in 1:PN) {
       ZaL <- mM
       for (gi in seq_len(NG)) {
@@ -1563,8 +1567,7 @@ blicc_ld <<- blicc_ld
       for (gi in seq_len(NG)) {
         p <- FaL[[gi]] / ZaL
         Ca <- mort * p[surv_idx[[mi]]] # catch numbers
-        CW[[yi]] <- CW[[yi]] + tapply(Ca * wt[[mi]], INDEX = sim_idx, FUN =
-                                        "sum")
+        CW[[yi]][ , gi] <- tapply(Ca * wt[[mi]], INDEX = sim_idx, FUN = "sum")
         # sum up in categories
         cl <- tapply(Ca,
                      INDEX = list(len_idx[[mi]], sim_idx),
@@ -1606,13 +1609,15 @@ blicc_ld <<- blicc_ld
                                     FUN = "sum")
         mi <- 1L
         yi <- yi + 1L
-        CW[[yi]] <- double(nsim)
+        CW[[yi]] <- array(0, dim=c(nsim, NG))
       } else {
         mi <- mi + 1L
       }
     } #ti
     CW[[yi]] <- NULL
+    mF[[yi]] <- NULL
     mFarray <- aperm(simplify2array(mF), c(1, 3, 2)) # gear last term
+    CWarray <- aperm(simplify2array(CW), c(1, 3, 2)) # gear last term
     return(
       list(
         stock_assessment = stock_assessment,
@@ -1620,7 +1625,7 @@ blicc_ld <<- blicc_ld
         Rec = simplify2array(Rec),
         mF = mFarray,
         LF = LF,
-        CW = simplify2array(CW),
+        CW = CWarray,
         pjIndex = simplify2array(pjIndex),
         blicc_ld = blicc_ld,
         ref_pt = ref_pt,

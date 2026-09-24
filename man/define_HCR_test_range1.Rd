@@ -44,5 +44,6 @@ A tibble of all combinations of index, control, control change limit,
 and moving average parameters for the HCR.
 }
 \description{
-A tibble is created defining full combinations of the defined parameter ranges.
+A tibble is created defining full combinations of the defined parameter
+ranges.
 }

@@ -28,6 +28,7 @@ run_HCR_MSE <- function(HCR_df, HCR_MSE) {
       .progress = "HCR Sim"
     )) |>
     tidyr::unnest(cols=Res)
+
   HCR_df <- evaluate_HCR(HCR_df, HCR_MSE)
   return(HCR_df)
 }
@@ -59,19 +60,19 @@ run_HCR_MSE_para <- function(HCR_df, HCR_MSE) {
   .Random.seed <- factory_stream
   
   HCR_df <- HCR_df |>
-    dplyr::select(ID:ma) |>
+    dplyr::select(ID, trIndex, trControl, control_type, change_limit, ma, ctrl_pF) |>
     dplyr::mutate(Res = furrr::future_pmap(
-      list(trIndex, trControl, change_limit, ma),
+      list(trIndex, trControl, control_type, change_limit, ma, ctrl_pF),
       \(trIndex, trControl, control_type, change_limit, ma, ctrl_pF)
       HCR_performance(HCR_MSE(trIndex, trControl, control_type, change_limit, ma, ctrl_pF)),
       .options = furrr_options(seed = TRUE),
       .progress = TRUE
     )) |>
     tidyr::unnest(cols=Res)
+  
   HCR_df <- evaluate_HCR(HCR_df, HCR_MSE)
   return(HCR_df)
 }
-
 
 
 #' Ranks HCR based on performance indicators and evaluates whether the HCR is a 
@@ -88,7 +89,8 @@ run_HCR_MSE_para <- function(HCR_df, HCR_MSE) {
 #' 
 evaluate_HCR <- function(HCR_df, HCR_MSE) {
   ref_pt <- get("ref_pt", envir=environment(HCR_MSE))
-  Ranks <- nrow(HCR_df)+1
+  proj_length <- get("proj_length", envir=environment(HCR_MSE))
+  Ranks <- nrow(HCR_df)+1L
   HCR_df$Catch_Rank <- Ranks - rank(HCR_df$Catch_pcile)   
   HCR_df$State_Rank <- Ranks - rank(HCR_df$State)    
   HCR_df <- HCR_df |>
@@ -99,6 +101,41 @@ evaluate_HCR <- function(HCR_df, HCR_MSE) {
     dplyr::mutate(
       Rank = max(Catch_Rank, State_Rank)) |>
     dplyr::ungroup()
+  
+  # Add reference point row
+  common_fields <- tibble::tibble(ID = 0, trIndex = NA, trControl=NA, 
+                                  control_type=NA, change_limit=NA, ma=NA, 
+                                  ctrl_pF=NA, Catch_Rank = NA, State_Rank = NA, 
+                                  Evaluation = NA, Rank = NA)
+  
+  if (proj_length == 0) {  # Retrospective
+    HCR_df <- HCR_df |>
+      rbind( cbind(
+        common_fields,
+        past_performance(HCR_MSE)
+      ))
+  } else {
+    Catch_Avg <- mean(HCR_df$Catch_Avg)
+    Catch_Rng <- mean(HCR_df$Catch_Rng)
+    Catch_pcile <- mean(HCR_df$Catch_pcile)
+    CPUE_Avg <- mean(ref_pt$CPUE_tar)
+    HCR_df <- HCR_df |>
+      rbind( cbind(
+        common_fields,
+        tibble::tibble(Catch_Avg = Catch_Avg,
+                       Catch_Rng = Catch_Rng,
+                       Catch_pcile = Catch_pcile,
+                       CPUE_Avg = CPUE_Avg,
+                       lt_Blim = ref_pt$max_risk,
+                       at_Btar = ref_pt$mostly,
+                       gt_Btar = ref_pt$max_risk,
+                       State = ref_pt$mostly,
+                       Err_Type1 = ref_pt$max_risk,
+                       Err_Type2 = ref_pt$max_risk
+        )
+      )) |>
+    dplyr::select(ID:ctrl_pF, Catch_Avg:Err_Type2, everything())
+  }
   return(HCR_df)
 }
 

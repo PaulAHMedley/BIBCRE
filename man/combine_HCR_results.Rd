@@ -4,13 +4,10 @@
 \alias{combine_HCR_results}
 \title{JABBAstan Combines multiple HCR simulation results into a single tibble}
 \usage{
-combine_HCR_results(HCR_res, HCR_df, HCR_MSE)
+combine_HCR_results(HCR_res_list, HCR_MSE)
 }
 \arguments{
-\item{HCR_res}{A list of results from \link{HCR_performance}}
-
-\item{HCR_df}{A data frame produced by eg \link{define_HCR_test_range} with
-HCR parameters}
+\item{HCR_res_list}{A list of results from \link{HCR_performance}}
 
 \item{HCR_MSE}{HCR function produced by \link{create_fishblicc_MSE},
 \link{create_JABBA_MSE} or \link{create_ptStan_MSE}}

@@ -2,9 +2,8 @@
 % Please edit documentation in R/DefineHCR.R
 \name{define_HCR_test_range}
 \alias{define_HCR_test_range}
-\title{Generates combinations of index, controls, change limits and the index moving
-average parameter as list columns in a tibble, each row being a unique HCR.
-Only works with single controls.}
+\title{A tibble is created defining full combinations of the defined parameter
+ranges.}
 \usage{
 define_HCR_test_range(
   IMSY,
@@ -48,5 +47,7 @@ A tibble of all combinations of index, control, control change limit,
 and moving average parameters for the HCR.
 }
 \description{
-A tibble is created defining full combinations of the defined parameter ranges.
+Generates combinations of index, controls, change limits and the index moving
+average parameter as list columns in a tibble, each row being a unique HCR.
+Only works with single controls.
 }

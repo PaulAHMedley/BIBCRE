@@ -220,3 +220,25 @@ table_sim_status <- function(HCR_sim) {
       flextable::colformat_double(digits=1)
   )
 }
+
+
+#' JABBAstan Table the standard performance measures for a HCR simulation
+#'
+#' @inheritParams HCR_performance
+#' @return `flextable` containing the HCR performance measures
+#' @export
+#'
+table_sim_performance <- function(HCR_sim) {
+  tbl <- HCR_performance(HCR_sim)
+  
+  tbl |>
+    flextable::flextable() |>
+    flextable::set_header_labels(values = c("Mean Catch", "Mean Catch Range", "Catch Lower Percentile",
+                                            "CPUE", "Below LRP", "In Target Range", "Above Target", "Good Fishery State",
+                                            "HCR False Positive", "HCR False Negative")) |>
+    flextable::colformat_double(j=1:3, digits=0, big.mark="") |>
+    flextable::colformat_double(j=4:10, digits=3, big.mark="")
+}
+
+
+

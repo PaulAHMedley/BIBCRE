@@ -1,10 +1,11 @@
 
+#' A tibble is created defining full combinations of the defined parameter 
+#' ranges.
+#'
 #' Generates combinations of index, controls, change limits and the index moving 
 #' average parameter as list columns in a tibble, each row being a unique HCR. 
 #' Only works with single controls.
-#' 
-#' A tibble is created defining full combinations of the defined parameter ranges.
-#' 
+#'
 #' @param  IMSY Index at MSY estimated from the JABBA model
 #' @param  fMSY Control (TAC or effort) at MSY estimated from the JABBA model
 #' @param  rel_index_range  (lower, upper) range for indices as proportions of 
@@ -118,7 +119,8 @@ standard_risk_ref_pt <- function(B_tar = 1) {
 #' Generates combinations of index, controls, change limits and the index moving
 #' average parameter as list columns in a tibble, each row being a unique HCR.
 #'
-#' A tibble is created defining full combinations of the defined parameter ranges.
+#' A tibble is created defining full combinations of the defined parameter 
+#' ranges.
 #'
 #' @param  IMSY Index at MSY estimated from the JABBA model
 #' @param  fMSY Control (TAC or effort) at MSY estimated from the JABBA model
@@ -174,7 +176,6 @@ define_HCR_test_range1 <- function(IMSY, fMSY,
                          control_type=control_type, ctrl_pF = ctrl_pF) |>
            dplyr::select(ID, dplyr::everything()))
 }
-
 
 
 #' Generates infection points for index/control pairs of values for a list of 
@@ -253,14 +254,19 @@ generate_HCR_range <- function(values = c(0.5, 1.0, 1.5),
 #'
 #' @inheritParams run_HCR_MSE
 #' @inheritParams graph_sim_Btar_Ftar
+#' @param ctrl_index Set the control to plot. Only relevant if more than one 
+#'   control is applied   
 #' @param HCR_ID Logical - whether to include the ID as a factor in the plot.
 #'   Will only work for 12 or fewer HCR.
+#' @param highlight A vector of HCR ID to highlight in the plot in red. The 
+#'   default 0 means it is not used.
 #' @return A ggplot object plotting the HCR's
 #' @export
 #'
 graph_linear_HCR <- function(HCR_df,
                              ctrl_index = 1L,
                              HCR_sim = NULL,
+                             highlight = 0,
                              HCR_ID = TRUE) {
   listify <- function(x) if (is.list(x)) x else list(x)
   HCRorder <- dplyr::select(dplyr::mutate(HCR_df, 
@@ -324,13 +330,21 @@ graph_linear_HCR <- function(HCR_df,
   gp <- gp +
     ggplot2::geom_line() +
     ggplot2::labs(y = "Control", x = "HCR Index") +
-    ggplot2::coord_cartesian( y = c(0, NA))
+    ggplot2::coord_cartesian(y = c(0, NA))
   
   if (HCR_ID & nrow(HCR_df) <= 12) {
     id_labels <- with(HCRorder, setNames(as.character(ID), as.character(order)))
     gp <- gp + ggplot2::facet_wrap(ggplot2::vars(order), 
-                                   labeller=ggplot2::labeller(order = id_labels))
+                                   labeller = ggplot2::labeller(order = id_labels))
   }
+  if (all(highlight > 0)) {
+    df <- dplyr::filter(line_df, ID %in% highlight)
+    gp <- gp +
+      ggplot2::geom_line(data=df, mapping=ggplot2::aes(x = trIndex, y = trControl), 
+                         colour="red")
+      
+  }
+  
   if (!is.null(HCR_sim)) {
     pv_df <- tibble::tibble(pvIndex = pvIndex, pvControl = pvControl)
     tr_df <- tibble::tibble(trIndex = trIndex, trControl = trControl)

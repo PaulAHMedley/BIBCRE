@@ -1,6 +1,6 @@
 Package: BIBCRE
 Title: Bayesian Index-based Control Rule Evaluations
-Version: 0.5
+Version: 0.51
 Authors@R: 
     person("Paul", "Medley", , "paulahmedley@gmail.com", role = c("aut", "cre"))
 Description: The package is able to test whether an HCR achieves objectives 
@@ -15,6 +15,7 @@ Description: The package is able to test whether an HCR achieves objectives
 License: GPL (>= 3)
 Imports: 
     stats,
+    rlang,
     dplyr,
     tibble,
     tidyr,

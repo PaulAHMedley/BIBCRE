@@ -2,7 +2,7 @@
 % Please edit documentation in R/HCRPerform.R
 \name{HCR_performance}
 \alias{HCR_performance}
-\title{JABBA version Calculate the performance measures of a harvest control rule and return it
+\title{Calculate the performance measures of a harvest control rule and return it
 as a row in a data frame}
 \usage{
 HCR_performance(HCR_sim)

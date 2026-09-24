@@ -31,7 +31,7 @@ create_ptStan_MSE <- function(stan_fit,
                               stan_dat,
                               proj_length = 50,
                               nsim = 1000,
-                              implement_cv = 0.1,
+                              implement_cv = "estimate",
                               ref_pt = standard_risk_ref_pt()) {
   # candidate HCR definitions: not used in this function, but recorded for later evaluation
   # can be obtained from the function using "get"
@@ -43,7 +43,7 @@ create_ptStan_MSE <- function(stan_fit,
   # Extract the data components that will be used from the fit
   Par <- rstan::extract(stan_fit, permuted = TRUE, inc_warmup = FALSE, include = TRUE) |>
     tibble::as_tibble()
-  
+  if (!is.numeric(implement_cv)) implement_cv <- mean(Par$lq_cv)
   # Dimensions
   TN <- as.integer(stan_dat$TN)
   if (proj_length > 0) {
@@ -89,9 +89,8 @@ create_ptStan_MSE <- function(stan_fit,
   Effort <- with(stan_dat, TCA_ca / ( sum(TCE_ca) / sum(TCE_ef) )) # Fixed effort
   pB <- matrix(0, ncol=PTN+1, nrow=nsim)
   Ft <- C <- matrix(0.0, nrow=nsim, ncol=PTN)
-
   for (i in seq_len(nsim)) {
-    pvFt <- with(Par, Effort * exp(lq[i]) + dF[i,])
+    pvFt <- with(Par, Effort * exp(lq[i] + slqt[i,]*lq_cv[i]))
     pS <- exp( -pvFt )
     pB[i, 1:TN] <- with(Par, pt_BioDyn(sNut[i,], Nus[i], pS, P0[i], r[i], m[i]))
     Ft[i, 1:TN] <- pvFt
@@ -100,17 +99,17 @@ create_ptStan_MSE <- function(stan_fit,
   rm(pS, pvFt)
 
   # Single gear
-  pvCPUE <- array(0, dim=c(TN, 1))
+  pvCPUE <- array(NA_real_, dim=c(TN, 1))
   pvCPUE[stan_dat$TCE_t,] <- with(stan_dat, TCE_ca / TCE_ef)
 
   #Process error
   if (proj_length == 0) {# Retrospective
     Bdev <- with(Par, exp(sweep(sNut, Nus, MARGIN=1, "*"))) |>
       cbind(rlnorm(nsim, 0, lsigma))
-    implement_error <- (Ft[, 1:TN] + Par$dF) / Ft[, 1:TN]
+    implement_error <- with(Par, exp(sweep(slqt, MARGIN=1, STATS=lq_cv, FUN="*")))
   } else { # Projection
     Bdev <- matrix(rlnorm(nsim*(PN+1L), 0, lsigma), nrow = nsim, ncol = PN+1L)
-    implement_error <-  matrix(exp(rlnorm((PN+1L)*nsim, 0, implement_cv)), ncol=PN+1L)
+    implement_error <-  matrix(rlnorm((PN+1L)*nsim, 0, implement_cv), ncol=PN+1L)
   }
   # The following will need adaptation if more than one gear
   q <- exp(dplyr::pull(Par, lq))
@@ -124,11 +123,13 @@ create_ptStan_MSE <- function(stan_fit,
   dat <- stan_dat
   # Complete the default reference points
   ref_pt$B_tar <- dplyr::pull(Par, BMSY)*ref_pt$TRP
+  dimnames(ref_pt$B_tar) <- NULL
   ref_pt$B_lim <- ref_pt$B_tar*ref_pt$LRP
   ref_pt$F_tar <- with(Par, - log((m-1) / (m - 1 + r * (1-ref_pt$B_tar^(m-1)))))
+  dimnames(ref_pt$F_tar) <- NULL
+  ref_pt$CPUE_tar <- with(Par, exp(lq) * Binf * (1-exp(-ref_pt$F_tar)) * BMSY / ref_pt$F_tar)
   ref_pt$rp_type <- "MSY"
-  Par <- dplyr::select(Par, -BMSY)
-  
+
   # Tidy up
   rm(stan_fit, stan_dat, i)
 
@@ -182,11 +183,13 @@ create_ptStan_MSE <- function(stan_fit,
     
     if (proj_length == 0) { # Retrospective
       start_ti <- TN + 1L
-      proj_times <- seq(PN)
+      proj_times <- seq_len(PN)
       pB[, start_ti] <- Par$P0 # restart 
+      CPUE <- matrix(0.0, nrow=nsim, ncol=PN)
     } else {
       start_ti <- TN
-      proj_times <- seq(PN+1L)
+      proj_times <- seq_len(PN+1L)
+      CPUE <- matrix(0.0, nrow=nsim, ncol=PN+1L)
     }
     
     for (pi in proj_times) {
@@ -204,27 +207,27 @@ create_ptStan_MSE <- function(stan_fit,
         } else if (control_type[cj]=="Effort") {
           F_limit <- Ft1 * (1 - ctrl_pF[cj]) + q * pjControl[ , cj, pi]
         } else { # Opportunities
-          F_limit <- Ft1 * (1 - ctrl_pF[cj] + ctrl_pF[cj] * pjControl[ , cj, pi])
+          F_limit <- Ft1 * (1 - ctrl_pF[cj]) + ctrl_pF[cj] * pjControl[ , cj, pi]
         }
         Ft1 <- pmin(Ft1, F_limit) 
       }
-
+      
       Ft[ , ti] <- Ft1 * implement_error[ , pi]
       pB[, ti+1L] <- pB1 * exp(- Ft[, ti])
       C[ , ti] <- (pB1 - pB[, ti+1L]) * Binf
-      CPUE <- exp(rnorm(nsim, 0, ce_cv)+lq) * C[ , ti] / Ft[ , ti]
-
-      pjIndex[, pi+1L] <- UpdateIndex(pjIndex[, pi], CPUE)
+      CPUE[ , pi] <- exp(rnorm(nsim, 0, ce_cv)+lq) * C[ , ti] / Ft[ , ti]
+      pjIndex[, pi+1L] <- UpdateIndex(pjIndex[, pi], CPUE[ , pi])
       pjControl[,, pi+1L] <- CalcControl(pjIndex[, pi+1L], pjControl[, , pi])
     } #ti
 
     return(list(stock_assessment = stock_assessment,
-                pB=pB, C=C, Ft=Ft, Par=Par,
+                pB=pB, C=C, Ft=Ft, CPUE = CPUE, Par=Par, 
                 implement_error = implement_error,
                 pvIndex=pvIndex, pvControl=pvControl,
                 pjIndex=pjIndex, pjControl=pjControl,
                 HCR=list(nsim=nsim, TN=TN, PN=PN, PTN=PTN,
                          start_year = start_year,
+                         implement_cv = implement_cv,
                          trIndex=trIndex, trControl=trControl,
                          control_type=control_type,
                          change_limit=change_limit, ma=ma),
@@ -298,7 +301,7 @@ pt_create_linear_control <- function(trIndex, trControl,
         function(indx, prev_con){
           # Calculate the control for each index value
           con <- array(0, dim=c(length(indx), NCtrl))
-          for (cj in seq(NCtrl)) {
+          for (cj in seq_len(NCtrl)) {
             ii <- findInterval(indx, trIndex[[cj]])
             con[, cj] <- trControl[[cj]][ii] +
               (trControl[[cj]][ii+1L] - trControl[[cj]][ii]) *
@@ -474,6 +477,7 @@ pt_calc_MSY_refpt <- function(PP) {
   CPUEMSY <- exp(PP$lq) * PP$Binf * (1-exp(-FMSY)) * PP$BMSY / FMSY
   return(  list(BMSY = mean(PP$BMSY),
                 IMSY = mean(CPUEMSY),
+                CPUEMSY = CPUEMSY,
                 FMSY = mean(FMSY),
                 fMSY = mean(FMSY * exp(-PP$lq)),
                 MSY = mean(PP$MSY))  

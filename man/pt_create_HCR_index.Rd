@@ -4,14 +4,12 @@
 \alias{pt_create_HCR_index}
 \title{Create the empirical abundance index update function.}
 \usage{
-pt_create_HCR_index(ma, func = NULL, se)
+pt_create_HCR_index(ma, func = NULL)
 }
 \arguments{
 \item{ma}{Moving average parameter for index time series}
 
 \item{func}{Function used to combine multiple CPUE series into a single index}
-
-\item{se}{Observation standard error to be added in to the index}
 }
 \value{
 A function taking a single CPUE list as a parameter that can be used

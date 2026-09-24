@@ -9,6 +9,7 @@ create_ptStan_MSE(
   stan_dat,
   proj_length = 50,
   nsim = 1000,
+  implement_cv = "estimate",
   ref_pt = standard_risk_ref_pt()
 )
 }
@@ -17,9 +18,13 @@ create_ptStan_MSE(
 
 \item{stan_dat}{Data list used to fit the Stan model}
 
-\item{proj_length}{Projection length in years}
+\item{proj_length}{Projection length in years. If set to zero this will apply
+the HCR to the historical fit using estimated errors.}
 
 \item{nsim}{Number of simulations to run}
+
+\item{implement_cv}{Coefficient of variation for lognormal implementation
+error applied to fishing mortality. Not used if proj_length==0.}
 
 \item{ref_pt}{Specifies risk based reference points in a list. Otherwise
 defaults apply.}
@@ -33,5 +38,5 @@ control change limit and moving average parameter.
 }
 \description{
 The HCR function returns simulation results from HCR parameters using a
-jabba model fit results.
+JABBA model fit results from JABBAstan.
 }

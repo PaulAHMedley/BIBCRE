@@ -3,10 +3,7 @@
 \name{rank_HCR}
 \alias{rank_HCR}
 \title{Ranks HCR based on performance indicators and evaluates whether the HCR is a
-candidate.
-
-The resulting ranks and whether the HCR is a candidate or not is added as
-columns to the data frame.}
+candidate.}
 \usage{
 rank_HCR(HCR_df, HCR_MSE)
 }
@@ -21,6 +18,10 @@ HCR parameters}
 HCR data frame with added evaluation and ranks
 }
 \description{
+The resulting ranks and whether the HCR is a candidate or not is added as
+columns to the data frame.
+}
+\details{
 Ranks are based on catch (10th percentile) and stock state (proportion of
 the simulation spent around the target level - that spent below Blim).
 }
